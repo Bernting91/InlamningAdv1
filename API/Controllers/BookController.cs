@@ -1,10 +1,14 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using MediatR;
 using Application.Books.Commands;
-using Application.Books.Queries;
+using Application.Books.Queries.GetbookbyID;
 using Domain;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Application.Books.Queries.GetAllBooks;
+using Application.Books.Commands.AddBook;
+using Application.Books.Commands.UpdateBook;
+using Application.Books.Commands.RemoveBook;
 
 namespace API.Controllers
 {
