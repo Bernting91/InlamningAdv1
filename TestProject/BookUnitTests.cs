@@ -1,6 +1,9 @@
 using Application.Books.Commands;
-using Application.Books.Handlers;
+using Application.Books.Commands.AddBook;
+using Application.Books.Commands.RemoveBook;
+using Application.Books.Commands.UpdateBook;
 using Application.Books.Queries;
+using Application.Books.Queries.GetbookbyID;
 using Domain;
 using Infrastructure.Database;
 using MediatR;
@@ -30,7 +33,7 @@ namespace TestProject
         public async Task When_Method_AddNewBook_isCalled_Then_BookAddedToList()
         {
             // Arrange
-            Book bookToTest = new Book(1, "RobertBook", "Book of life");
+            Book bookToTest = new Book(1, "RobertBook", "Book of life","Dr.Booker McBook");
 
             // Act
             Book bookCreated = await _mediator.Send(new AddBookCommand(bookToTest));
