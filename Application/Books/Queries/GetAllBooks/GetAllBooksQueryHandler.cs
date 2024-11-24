@@ -1,9 +1,6 @@
 ﻿using Domain;
 using Infrastructure.Database;
 using MediatR;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Application.Books.Queries.GetAllBooks
 {

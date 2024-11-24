@@ -16,10 +16,4 @@
     <ProjectReference Include="..\Infrastructure\Infrastructure.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Authors\Commands\AddAuthor\" />
-    <Folder Include="Authors\Commands\UpdateAuthor\" />
-    <Folder Include="Authors\Commands\RemoveAuthor\" />
-  </ItemGroup>
-
 </Project>
