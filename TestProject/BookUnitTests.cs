@@ -33,7 +33,8 @@ namespace TestProject
         public async Task When_Method_AddNewBook_isCalled_Then_BookAddedToList()
         {
             // Arrange
-            Book bookToTest = new Book(1, "RobertBook", "Book of life","Dr.Booker McBook");
+            Author author = new Author(1, "Dr.Book McBookie");
+            Book bookToTest = new Book(1, "RobertBook", "Book of life", author);
 
             // Act
             Book bookCreated = await _mediator.Send(new AddBookCommand(bookToTest));
@@ -47,8 +48,9 @@ namespace TestProject
         public async Task When_Method_RemoveBook_isCalled_Then_BookRemovedFromList()
         {
             // Arrange
-            Book bookToTest = new Book(1, "RobertCook", "Book of life");
-            await _mediator.Send(new AddBookCommand(bookToTest)); // Add the book first
+            Author author = new Author(1, "Dr.Book McBookie");
+            Book bookToTest = new Book(1, "RobertCook", "Book of life", author);
+            await _mediator.Send(new AddBookCommand(bookToTest)); 
 
             // Act
             Book? bookRemoved = await _mediator.Send(new RemoveBookCommand(bookToTest));
@@ -61,8 +63,9 @@ namespace TestProject
         public async Task When_Method_UpdateBook_isCalled_Then_BookUpdated()
         {
             // Arrange
-            Book bookToTest = new Book(1, "RobertCook", "Book of life");
-            await _mediator.Send(new AddBookCommand(bookToTest)); // Add the book first
+            Author author = new Author(1, "Dr.Book McBookie");
+            Book bookToTest = new Book(1, "RobertCook", "Book of life", author);
+            await _mediator.Send(new AddBookCommand(bookToTest)); 
 
             // Act
             bookToTest.Title = "Updated Title";
@@ -77,8 +80,9 @@ namespace TestProject
         public async Task When_Method_GetBookById_isCalled_Then_BookReturned()
         {
             // Arrange
-            Book bookToTest = new Book(1, "RobertCook", "Book of life");
-            await _mediator.Send(new AddBookCommand(bookToTest)); // Add the book first
+            Author author = new Author(1, "Dr.Book McBookie");
+            Book bookToTest = new Book(1, "RobertCook", "Book of life", author);
+            await _mediator.Send(new AddBookCommand(bookToTest)); 
 
             // Act
             Book? bookReturned = await _mediator.Send(new GetBookByIdQuery(1));
@@ -91,7 +95,8 @@ namespace TestProject
         public void When_Method_AddNewBook_isCalled_With_EmptyTitle_Then_ArgumentExceptionIsThrown()
         {
             // Arrange
-            Book bookToTest = new Book(1, "", "Description");  // Empty title
+            Author author = new Author(1, "Dr.Book McBookie");
+            Book bookToTest = new Book(1, "", "Description", author);
 
             // Act & Assert
             Assert.ThrowsAsync<ArgumentException>(() => _mediator.Send(new AddBookCommand(bookToTest)));
