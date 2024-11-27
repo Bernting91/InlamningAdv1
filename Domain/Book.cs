@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Domain
+﻿namespace Domain
 {
     public class Book
     {
@@ -8,6 +6,9 @@ namespace Domain
         public string? Title { get; set; }
         public string? Description { get; set; }
         public Author Author { get; set; }
+
+        // Parameterless constructor for EF Core
+        public Book() { }
 
         public Book(int id, string title, string description, Author author)
         {
