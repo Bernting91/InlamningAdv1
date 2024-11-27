@@ -13,8 +13,8 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 // Register MediatR
-builder.Services.AddApplication(); 
-builder.Services.AddInfrastructure();
+builder.Services.AddApplication();
+builder.Services.AddInfrastructure(builder.Configuration.GetSection("ConnectionStrings").Value!);
 
 // Register FakeDatabase
 builder.Services.AddSingleton<FakeDatabase>();
