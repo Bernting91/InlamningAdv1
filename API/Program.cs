@@ -14,7 +14,7 @@ builder.Services.AddSwaggerGen();
 
 // Register MediatR
 builder.Services.AddApplication();
-builder.Services.AddInfrastructure(builder.Configuration.GetSection("ConnectionStrings").Value!);
+builder.Services.AddInfrastructure(builder.Configuration.GetConnectionString("DefaultConnection")!);
 
 // Register FakeDatabase
 builder.Services.AddSingleton<FakeDatabase>();
