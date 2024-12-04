@@ -9,6 +9,7 @@ using Application.Books.Commands.UpdateBook;
 using Application.Books.Queries.GetbookbyID;
 using Domain;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace API.Controllers
@@ -24,7 +25,7 @@ namespace API.Controllers
         {
             _mediator = mediator;
         }
-
+        [Authorize]
         [HttpGet]
         public async Task<IEnumerable<Author>> Get()
         {
