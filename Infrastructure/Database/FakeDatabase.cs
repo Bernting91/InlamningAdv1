@@ -21,5 +21,18 @@ namespace Infrastructure.Database
                 new Author(4, "Dr.Booker McBookie"),
                 new Author(5, "Dr.BookDur McBookie"),
             };
+
+        public List<User> Users
+        {
+            get { return allUsers; }
+            set { allUsers = value; }
+        }
+        private static List<User> allUsers = new()
+        {
+            new User { Id = Guid.NewGuid(), UserName = "Robert"},
+            new User { Id = Guid.NewGuid(), UserName = "Bobert"},
+            new User { Id = Guid.NewGuid(), UserName = "Snobert"},
+            new User { Id = new Guid ("12345678-1234-5678-1234-567812365478"), UserName = "TestUserForUnitTests" }
+        };
     }
 }
