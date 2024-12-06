@@ -10,15 +10,15 @@ namespace Domain
     public class OperationResult<T>
     {
 
-        public bool Success { get; set; }
-        public string Message { get; set; }
-        public T Data { get; set; }
-        public string ErrorMessage { get; set; }
+        public bool IsSuccessfull { get; private set; }
+        public string Message { get; private set; }
+        public T Data { get; private set; }
+        public string ErrorMessage { get; private set; }
 
-        private OperationResult(bool success, string message, T data, string errorMessage)
+        private OperationResult(bool isSuccessfull, string message, T data, string errorMessage)
         {
             {
-                Success = success;
+                IsSuccessfull = isSuccessfull;
                 Message = message;
                 Data = data;
                 ErrorMessage = errorMessage ?? string.Empty;

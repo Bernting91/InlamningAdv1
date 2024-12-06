@@ -1,4 +1,5 @@
 ﻿using Application.Dtos;
+using Domain;
 using MediatR;
 using System;
 using System.Collections.Generic;
@@ -8,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Application.Users.Queries.Login
 {
-    public class LoginUserQuery : IRequest<String>
+    public class LoginUserQuery : IRequest<OperationResult<String>>
     {
         public LoginUserQuery(UserDto loginUser)
         {

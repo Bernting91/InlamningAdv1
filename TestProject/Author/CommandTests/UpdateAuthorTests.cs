@@ -35,22 +35,28 @@ namespace TestProject.Authors.Commands
 
             // Act
             var updatedName = "Updated Name";
-            Author? authorUpdated = await _mediator.Send(new UpdateAuthorCommand(authorId, updatedName));
+            OperationResult<Author> result = await _mediator.Send(new UpdateAuthorCommand(authorId, updatedName));
 
             // Assert
-            Assert.That(authorUpdated, Is.Not.Null);
-            Assert.That(authorUpdated.Name, Is.EqualTo(updatedName));
+            Assert.That(result.IsSuccessfull, Is.True);
+            Assert.That(result.Data, Is.Not.Null);
+            Assert.That(result.Data.Name, Is.EqualTo(updatedName));
         }
 
         [Test]
-        public void When_Method_UpdateAuthor_isCalled_With_InvalidAuthor_Then_AuthorNotUpdated()
+        public async Task When_Method_UpdateAuthor_isCalled_With_InvalidAuthor_Then_AuthorNotUpdated()
         {
             // Arrange
             var invalidAuthorId = Guid.NewGuid();
             var invalidAuthorName = "Invalid Author";
 
-            // Act & Assert
-            Assert.ThrowsAsync<KeyNotFoundException>(() => _mediator.Send(new UpdateAuthorCommand(invalidAuthorId, invalidAuthorName)));
+            // Act
+            OperationResult<Author> result = await _mediator.Send(new UpdateAuthorCommand(invalidAuthorId, invalidAuthorName));
+
+            // Assert
+            Assert.That(result.IsSuccessfull, Is.False);
+            Assert.That(result.Data, Is.Null);
+            Assert.That(result.ErrorMessage, Is.EqualTo("Author not found"));
         }
     }
 }

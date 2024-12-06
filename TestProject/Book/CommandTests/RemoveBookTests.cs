@@ -35,18 +35,16 @@ namespace TestProject.Books.Commands
             await _mediator.Send(new AddBookCommand(bookToTest));
 
             // Act
-            Book? bookRemoved = await _mediator.Send(new RemoveBookCommand(bookToTest.Id));
+            OperationResult<Book> result = await _mediator.Send(new RemoveBookCommand(bookToTest.Id));
 
             // Assert
-            Assert.That(bookRemoved, Is.Not.Null);
+            Assert.That(result.IsSuccessfull, Is.True);
+            Assert.That(result.Data, Is.Not.Null);
         }
 
         [Test]
         public void When_Method_RemoveBook_isCalled_With_InvalidBook_Then_BookNotRemoved()
         {
-            // Arrange
-            Book? bookToTest = null;
-
             // Act & Assert
             Assert.ThrowsAsync<ArgumentNullException>(() => _mediator.Send(new RemoveBookCommand(Guid.Empty)));
         }

@@ -7,8 +7,6 @@
         public string? Description { get; set; }
         public Author Author { get; set; }
 
-        public Book() { }
-
         public Book(Guid id, string title, string description, Author author)
         {
             if (id == Guid.Empty)

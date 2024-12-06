@@ -1,32 +1,39 @@
 ﻿using Application.Interfaces.RepositoryInterfaces;
 using Domain;
 using MediatR;
-
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Application.Users.Commands.AddUser
 {
-    internal sealed class AddNewUserCommandHandler : IRequestHandler<AddNewUserCommand, User>
+    internal sealed class AddNewUserCommandHandler : IRequestHandler<AddNewUserCommand, OperationResult<User>>
     {
         private readonly IUserRepository _userRepository;
 
-        public AddNewUserCommandHandler (IUserRepository userRepository)
+        public AddNewUserCommandHandler(IUserRepository userRepository)
         {
             _userRepository = userRepository;
         }
 
-        public Task<User> Handle(AddNewUserCommand request, CancellationToken cancellationToken)
+        public async Task<OperationResult<User>> Handle(AddNewUserCommand request, CancellationToken cancellationToken)
         {
-            User userToCreate = new()
+            try
             {
-                Id = Guid.NewGuid(),
-                UserName = request.NewUser.UserName,
-                Password = request.NewUser.Password,
-            };
+                User userToCreate = new()
+                {
+                    Id = Guid.NewGuid(),
+                    UserName = request.NewUser.UserName,
+                    Password = request.NewUser.Password,
+                };
 
-            _userRepository.AddUser(userToCreate);
-            return Task.FromResult(userToCreate);
-            
+                await _userRepository.AddUser(userToCreate);
+                return OperationResult<User>.SuccessResult(userToCreate);
+            }
+            catch (Exception ex)
+            {
+                return OperationResult<User>.FailureResult($"An error occurred while adding the user: {ex.Message}");
+            }
         }
-
     }
 }

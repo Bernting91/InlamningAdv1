@@ -4,7 +4,6 @@ using Infrastructure.Database;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Infrastructure.Repositories
@@ -49,11 +48,10 @@ namespace Infrastructure.Repositories
 
         public async Task<User> LoginUser(User user)
         {
-            return await _realDatabase.Users
-                .FirstOrDefaultAsync(u => u.UserName == user.UserName && u.Password == user.Password);
+            return await _realDatabase.Users.FirstOrDefaultAsync(u => u.UserName == user.UserName && u.Password == user.Password);
         }
 
-        public async Task<User> UpdateUser(int id, User user)
+        public async Task<User> UpdateUser(Guid id, User user)
         {
             _realDatabase.Users.Update(user);
             await _realDatabase.SaveChangesAsync();

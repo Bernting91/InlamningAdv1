@@ -3,7 +3,7 @@ using MediatR;
 
 namespace Application.Authors.Commands.RemoveAuthor
 {
-    public class RemoveAuthorCommand : IRequest<Author>
+    public class RemoveAuthorCommand : IRequest<OperationResult<Author>>
     {
         public Guid Id { get; }
 

@@ -33,11 +33,12 @@ namespace TestProject.Books.Commands
             Book bookToTest = new Book(Guid.NewGuid(), "RobertBook", "Book of life", author);
 
             // Act
-            Book bookCreated = await _mediator.Send(new AddBookCommand(bookToTest));
+            OperationResult<Book> result = await _mediator.Send(new AddBookCommand(bookToTest));
 
             // Assert
-            Assert.That(bookToTest, Is.Not.Null);
-            Assert.That(bookCreated.Description, Is.EqualTo(bookToTest.Description));
+            Assert.That(result.IsSuccessfull, Is.True);
+            Assert.That(result.Data, Is.Not.Null);
+            Assert.That(result.Data.Description, Is.EqualTo(bookToTest.Description));
         }
 
         [Test]

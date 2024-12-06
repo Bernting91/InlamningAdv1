@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Application.Books.Commands.RemoveBook
 {
-    public class RemoveBookCommandHandler : IRequestHandler<RemoveBookCommand, Book?>
+    public class RemoveBookCommandHandler : IRequestHandler<RemoveBookCommand, OperationResult<Book?>>
     {
         private readonly IBookRepository _bookRepository;
 
@@ -16,21 +16,28 @@ namespace Application.Books.Commands.RemoveBook
             _bookRepository = bookRepository;
         }
 
-        public async Task<Book?> Handle(RemoveBookCommand request, CancellationToken cancellationToken)
+        public async Task<OperationResult<Book?>> Handle(RemoveBookCommand request, CancellationToken cancellationToken)
         {
-            if (request.Id == Guid.Empty)
+            try
             {
-                throw new ArgumentNullException(nameof(request.Id), "Book ID cannot be null or empty.");
-            }
+                if (request.Id == Guid.Empty)
+                {
+                    return OperationResult<Book?>.FailureResult("Id cannot be empty.");
+                }
 
-            var book = await _bookRepository.GetBookById(request.Id);
-            if (book == null)
+                var book = await _bookRepository.GetBookById(request.Id);
+                if (book == null)
+                {
+                    return OperationResult<Book?>.FailureResult("Book not found.");
+                }
+
+                await _bookRepository.DeleteBookById(request.Id);
+                return OperationResult<Book?>.SuccessResult(book);
+            }
+            catch (Exception ex)
             {
-                throw new KeyNotFoundException("Book not found.");
+                return OperationResult<Book?>.FailureResult($"An error occurred while removing the book: {ex.Message}");
             }
-
-            await _bookRepository.DeleteBookById(request.Id);
-            return book;
         }
     }
 }

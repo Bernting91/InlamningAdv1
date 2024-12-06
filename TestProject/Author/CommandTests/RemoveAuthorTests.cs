@@ -33,21 +33,27 @@ namespace TestProject.Authors.Commands
             _fakeDatabase.Authors.Add(authorToRemove);
 
             // Act
-            Author? authorRemoved = await _mediator.Send(new RemoveAuthorCommand(Guid.NewGuid()));
+            OperationResult<Author> result = await _mediator.Send(new RemoveAuthorCommand(authorToRemove.Id));
 
             // Assert
-            Assert.That(authorRemoved, Is.Not.Null);
+            Assert.That(result.IsSuccessfull, Is.True);
+            Assert.That(result.Data, Is.Not.Null);
             Assert.That(_fakeDatabase.Authors, Does.Not.Contain(authorToRemove));
         }
 
         [Test]
-        public void When_Method_RemoveAuthor_isCalled_With_InvalidAuthor_Then_AuthorNotRemoved()
+        public async Task When_Method_RemoveAuthor_isCalled_With_InvalidAuthor_Then_AuthorNotRemoved()
         {
             // Arrange
-            Author? authorToRemove = null;
+            Guid invalidAuthorId = Guid.NewGuid();
 
-            // Act & Assert
-            Assert.ThrowsAsync<ArgumentNullException>(() => _mediator.Send(new RemoveAuthorCommand(Guid.NewGuid())));
+            // Act
+            OperationResult<Author> result = await _mediator.Send(new RemoveAuthorCommand(invalidAuthorId));
+
+            // Assert
+            Assert.That(result.IsSuccessfull, Is.False);
+            Assert.That(result.Data, Is.Null);
+            Assert.That(result.ErrorMessage, Is.EqualTo("Author not found"));
         }
     }
 }

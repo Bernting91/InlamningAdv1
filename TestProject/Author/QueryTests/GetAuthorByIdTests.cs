@@ -33,18 +33,24 @@ namespace TestProject.Authors.Queries
             _fakeDatabase.Authors.Add(authorToFind);
 
             // Act
-            Author? authorFound = await _mediator.Send(new GetAuthorByIdQuery(authorToFind.Id));
+            OperationResult<Author> result = await _mediator.Send(new GetAuthorByIdQuery(authorToFind.Id));
 
             // Assert
-            Assert.That(authorFound, Is.Not.Null);
-            Assert.That(authorFound.Id, Is.EqualTo(authorToFind.Id));
+            Assert.That(result.IsSuccessfull, Is.True);
+            Assert.That(result.Data, Is.Not.Null);
+            Assert.That(result.Data.Id, Is.EqualTo(authorToFind.Id));
         }
 
         [Test]
-        public void When_Method_GetAuthorById_isCalled_With_InvalidId_Then_ExceptionThrown()
+        public async Task When_Method_GetAuthorById_isCalled_With_InvalidId_Then_AuthorNotFound()
         {
-            // Act & Assert
-            Assert.ThrowsAsync<ArgumentException>(() => _mediator.Send(new GetAuthorByIdQuery(Guid.NewGuid())));
+            // Act
+            OperationResult<Author> result = await _mediator.Send(new GetAuthorByIdQuery(Guid.NewGuid()));
+
+            // Assert
+            Assert.That(result.IsSuccessfull, Is.False);
+            Assert.That(result.Data, Is.Null);
+            Assert.That(result.ErrorMessage, Is.EqualTo("Author not found"));
         }
     }
 }

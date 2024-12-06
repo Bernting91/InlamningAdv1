@@ -3,7 +3,7 @@ using MediatR;
 
 namespace Application.Users.Commands.UpdateUser
 {
-    public record UpdateUserCommand(int Id, User user) : IRequest<User?>
+    public record UpdateUserCommand(Guid Id, User user) : IRequest<OperationResult<User?>>
     {
     }
 }
