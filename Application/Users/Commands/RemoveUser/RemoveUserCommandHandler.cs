@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Application.Users.Commands.RemoveUser
 {
-    public class RemoveUserCommandHandler : IRequestHandler<RemoveUserCommand, string>
+    internal sealed class RemoveUserCommandHandler : IRequestHandler<RemoveUserCommand, OperationResult<string>>
     {
         private readonly IUserRepository _userRepository;
 
@@ -16,20 +16,27 @@ namespace Application.Users.Commands.RemoveUser
             _userRepository = userRepository;
         }
 
-        public async Task<string> Handle(RemoveUserCommand request, CancellationToken cancellationToken)
+        public async Task<OperationResult<string>> Handle(RemoveUserCommand request, CancellationToken cancellationToken)
         {
-            if (request.Id == Guid.Empty)
+            try
             {
-                throw new ArgumentException("Id cannot be empty", nameof(request.Id));
-            }
+                if (request.Id == Guid.Empty)
+                {
+                    return OperationResult<string>.FailureResult("Id cannot be empty.");
+                }
 
-            var result = await _userRepository.DeleteUserById(request.Id);
-            if (result == "User Not Found")
+                var result = await _userRepository.DeleteUserById(request.Id);
+                if (result == "User Not Found")
+                {
+                    return OperationResult<string>.FailureResult("User not found.");
+                }
+
+                return OperationResult<string>.SuccessResult(result);
+            }
+            catch (Exception ex)
             {
-                throw new KeyNotFoundException($"User with Id {request.Id} not found.");
+                return OperationResult<string>.FailureResult($"An error occurred while removing the user: {ex.Message}");
             }
-
-            return result;
         }
     }
 }

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Application.Users.Queries.GetUserById
 {
-    public class GetUserByIdQueryHandler : IRequestHandler<GetUserByIdQuery, User>
+    public class GetUserByIdQueryHandler : IRequestHandler<GetUserByIdQuery, OperationResult<User>>
     {
         private readonly IUserRepository _userRepository;
 
@@ -16,20 +16,28 @@ namespace Application.Users.Queries.GetUserById
             _userRepository = userRepository;
         }
 
-        public async Task<User> Handle(GetUserByIdQuery request, CancellationToken cancellationToken)
+        public async Task<OperationResult<User>> Handle(GetUserByIdQuery request, CancellationToken cancellationToken)
         {
+            try
+            {
             if (request.Id == Guid.Empty)
             {
-                throw new ArgumentException("Id cannot be empty", nameof(request.Id));
+                return OperationResult<User>.FailureResult("User Id is required.");
             }
 
             var user = await _userRepository.GetUserById(request.Id);
             if (user == null)
             {
-                throw new KeyNotFoundException($"User with Id {request.Id} not found.");
+                return OperationResult<User>.FailureResult("User not found.");
             }
 
-            return user;
+            return OperationResult<User>.SuccessResult(user);
+        }
+    
+            catch (Exception ex)
+            {
+                return OperationResult<User>.FailureResult($"An error occurred while retrieving user: {ex.Message}");
+            }
         }
     }
 }

@@ -28,29 +28,38 @@ namespace API.Controllers
         [Authorize]
         [HttpGet]
         [SwaggerOperation(Summary = "Get all authors", Description = "Retrieves a list of all authors.")]
-        public async Task<IEnumerable<Author>> Get()
+        public async Task<IActionResult> Get()
         {
-            return await _mediator.Send(new GetAllAuthorsQuery());
+            var result = await _mediator.Send(new GetAllAuthorsQuery());
+            if (!result.IsSuccessfull)
+            {
+                return NotFound(result.ErrorMessage);
+            }
+            return Ok(result.Data);
         }
 
         [HttpGet("{id}")]
         [SwaggerOperation(Summary = "Get author by ID", Description = "Retrieves an author by their unique ID.")]
         public async Task<ActionResult<Author>> Get(Guid id)
         {
-            var author = await _mediator.Send(new GetAuthorByIdQuery(id));
-            if (author == null)
+            var result = await _mediator.Send(new GetAuthorByIdQuery(id));
+            if (!result.IsSuccessfull)
             {
-                return NotFound();
+                return NotFound(result.ErrorMessage);
             }
-            return Ok(author);
+            return Ok(result.Data);
         }
 
         [HttpPost]
         [SwaggerOperation(Summary = "Add a new author", Description = "Creates a new author.")]
         public async Task<ActionResult<Author>> Post([FromBody] Author authorToAdd)
         {
-            var author = await _mediator.Send(new AddAuthorCommand(authorToAdd));
-            return CreatedAtAction(nameof(Get), new { id = author.Id }, author);
+            var result = await _mediator.Send(new AddAuthorCommand(authorToAdd));
+            if (!result.IsSuccessfull)
+            {
+                return BadRequest(result.ErrorMessage);
+            }
+            return CreatedAtAction(nameof(Get), new { id = result.Data.Id }, result.Data);
         }
 
         [HttpPut("{id}")]
@@ -59,13 +68,13 @@ namespace API.Controllers
         {
             if (id != authorToUpdate.Id)
             {
-                return BadRequest();
+                return BadRequest("ID mismatch.");
             }
 
-            var updatedAuthor = await _mediator.Send(new UpdateAuthorCommand(authorToUpdate.Id, authorToUpdate.Name));
-            if (updatedAuthor == null)
+            var result = await _mediator.Send(new UpdateAuthorCommand(authorToUpdate.Id, authorToUpdate.Name));
+            if (!result.IsSuccessfull)
             {
-                return NotFound();
+                return NotFound(result.ErrorMessage);
             }
 
             return NoContent();
@@ -75,13 +84,18 @@ namespace API.Controllers
         [SwaggerOperation(Summary = "Delete an author", Description = "Deletes an author by their unique ID.")]
         public async Task<IActionResult> Delete(Guid id)
         {
-            var author = await _mediator.Send(new GetAuthorByIdQuery(id));
-            if (author == null)
+            var result = await _mediator.Send(new GetAuthorByIdQuery(id));
+            if (!result.IsSuccessfull)
             {
-                return NotFound();
+                return NotFound(result.ErrorMessage);
             }
 
-            await _mediator.Send(new RemoveAuthorCommand(id));
+            var deleteResult = await _mediator.Send(new RemoveAuthorCommand(id));
+            if (!deleteResult.IsSuccessfull)
+            {
+                return BadRequest(deleteResult.ErrorMessage);
+            }
+
             return NoContent();
         }
     }

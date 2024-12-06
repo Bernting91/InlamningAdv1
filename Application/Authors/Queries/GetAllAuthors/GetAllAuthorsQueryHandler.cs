@@ -4,7 +4,7 @@ using MediatR;
 
 namespace Application.Authors.Queries.GetAllAuthors
 {
-    public class GetAllAuthorsQueryHandler : IRequestHandler<GetAllAuthorsQuery, IEnumerable<Author>>
+    public class GetAllAuthorsQueryHandler : IRequestHandler<GetAllAuthorsQuery, OperationResult<IEnumerable<Author>>>
     {
         private readonly IAuthorRepository _authorRepository;
 
@@ -13,10 +13,14 @@ namespace Application.Authors.Queries.GetAllAuthors
             _authorRepository = authorRepository;
         }
 
-        public async Task<IEnumerable<Author>> Handle(GetAllAuthorsQuery request, CancellationToken cancellationToken)
+        public async Task<OperationResult<IEnumerable<Author>>> Handle(GetAllAuthorsQuery request, CancellationToken cancellationToken)
         {
             var authors = await _authorRepository.GetAllAuthors();
-            return authors;
+            if (authors == null || !authors.Any())
+            {
+                return OperationResult<IEnumerable<Author>>.FailureResult("No authors found.");
+            }
+            return OperationResult<IEnumerable<Author>>.SuccessResult(authors);
         }
     }
 }

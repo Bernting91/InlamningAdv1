@@ -35,10 +35,11 @@ namespace TestProject.Books.Queries
             await _mediator.Send(new AddBookCommand(bookToTest));
 
             // Act
-            Book? bookReturned = await _mediator.Send(new GetBookByIdQuery(bookToTest.Id));
+            OperationResult<Book> result = await _mediator.Send(new GetBookByIdQuery(bookToTest.Id));
 
             // Assert
-            Assert.That(bookReturned, Is.Not.Null);
+            Assert.That(result.IsSuccessfull, Is.True);
+            Assert.That(result.Data, Is.Not.Null);
         }
 
         [Test]

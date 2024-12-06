@@ -4,7 +4,7 @@ using MediatR;
 
 namespace Application.Authors.Commands.RemoveAuthor
 {
-    public class RemoveAuthorCommandHandler : IRequestHandler<RemoveAuthorCommand, Author?>
+    public class RemoveAuthorCommandHandler : IRequestHandler<RemoveAuthorCommand, OperationResult<Author?>>
     {
         private readonly IAuthorRepository _authorRepository;
 
@@ -13,21 +13,21 @@ namespace Application.Authors.Commands.RemoveAuthor
             _authorRepository = authorRepository;
         }
 
-        public async Task<Author?> Handle(RemoveAuthorCommand request, CancellationToken cancellationToken)
+        public async Task<OperationResult<Author?>> Handle(RemoveAuthorCommand request, CancellationToken cancellationToken)
         {
             if (request.Id == Guid.Empty)
             {
-                throw new ArgumentException("Id cannot be empty.", nameof(request.Id));
+                return OperationResult<Author>.FailureResult("Id cannot be empty.");
             }
 
             var author = await _authorRepository.GetAuthorById(request.Id);
             if (author == null)
             {
-                throw new KeyNotFoundException("Author not found.");
+                return OperationResult<Author>.FailureResult("Author not found.");
             }
 
             await _authorRepository.DeleteAuthorById(request.Id);
-            return author;
+            return OperationResult<Author>.SuccessResult(author);
         }
     }
 }

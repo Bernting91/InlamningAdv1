@@ -5,7 +5,7 @@ using MediatR;
 
 namespace Application.Books.Queries.GetbookbyID
 {
-    public class GetBookByIdQueryHandler : IRequestHandler<GetBookByIdQuery, Book?>
+    public class GetBookByIdQueryHandler : IRequestHandler<GetBookByIdQuery, OperationResult<Book?>>
     {
         private readonly IBookRepository _bookRepository;
 
@@ -14,13 +14,18 @@ namespace Application.Books.Queries.GetbookbyID
             _bookRepository = bookRepository;
         }
 
-        public Task<Book?> Handle(GetBookByIdQuery request, CancellationToken cancellationToken)
+        public async Task<OperationResult<Book?>> Handle(GetBookByIdQuery request, CancellationToken cancellationToken)
         {
             if (request.Id == Guid.Empty)
             {
-                throw new System.ArgumentException("Id cannot be empty.", nameof(request.Id));
+                return OperationResult<Book?>.FailureResult("Id cannot be empty.");
             }
-            return _bookRepository.GetBookById(request.Id);
+            var book = await _bookRepository.GetBookById(request.Id);
+            if (book == null)
+            {
+                return OperationResult<Book?>.FailureResult("Book not found.");
+            }
+            return OperationResult<Book?>.SuccessResult(book);
         }
     }
 }

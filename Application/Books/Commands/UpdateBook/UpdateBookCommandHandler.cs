@@ -4,7 +4,7 @@ using MediatR;
 
 namespace Application.Books.Commands.UpdateBook
 {
-    public class UpdateBookCommandHandler : IRequestHandler<UpdateBookCommand, Book?>
+    public class UpdateBookCommandHandler : IRequestHandler<UpdateBookCommand, OperationResult<Book?>>
     {
         private readonly IBookRepository _bookRepository;
 
@@ -13,18 +13,33 @@ namespace Application.Books.Commands.UpdateBook
             _bookRepository = bookRepository;
         }
 
-        public async Task<Book?> Handle(UpdateBookCommand request, CancellationToken cancellationToken)
+        public async Task<OperationResult<Book?>> Handle(UpdateBookCommand request, CancellationToken cancellationToken)
         {
-            if (request.Book.Id == Guid.Empty)
+            try
             {
-                throw new System.ArgumentException("Id cannot be empty.", nameof(request.Book.Id));
+                if (request.Book.Id == Guid.Empty)
+                {
+                    return OperationResult<Book?>.FailureResult("Id cannot be empty.");
+                }
+
+                if (string.IsNullOrWhiteSpace(request.Book.Title))
+                {
+                    return OperationResult<Book?>.FailureResult("Book title cannot be empty.");
+                }
+
+                var existingBook = await _bookRepository.GetBookById(request.Book.Id);
+                if (existingBook == null)
+                {
+                    return OperationResult<Book?>.FailureResult("Book with that ID does not exist.");
+                }
+
+                var updatedBook = await _bookRepository.UpdateBook(request.Book.Id, request.Book);
+                return OperationResult<Book?>.SuccessResult(updatedBook);
             }
-            if (string.IsNullOrWhiteSpace(request.Book.Title))
+            catch (Exception ex)
             {
-                throw new System.ArgumentException("Title cannot be empty.", nameof(request.Book.Title));
+                return OperationResult<Book?>.FailureResult($"An error occurred while updating the book: {ex.Message}");
             }
-            var book = await _bookRepository.UpdateBook(request.id, request.Book);
-            return book;
         }
     }
 }

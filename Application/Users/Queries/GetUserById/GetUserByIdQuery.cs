@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Application.Users.Queries.GetUserById
 {
-    public record GetUserByIdQuery(Guid Id) : IRequest<User>
+    public record GetUserByIdQuery(Guid Id) : IRequest<OperationResult<User>>
     {
     }
 }

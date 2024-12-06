@@ -4,7 +4,7 @@ using MediatR;
 
 namespace Application.Authors.Commands.AddAuthor
 {
-    public class AddAuthorCommandHandler : IRequestHandler<AddAuthorCommand, Author>
+    public class AddAuthorCommandHandler : IRequestHandler<AddAuthorCommand, OperationResult<Author>>
     {
         private readonly IAuthorRepository _authorRepository;
 
@@ -13,19 +13,19 @@ namespace Application.Authors.Commands.AddAuthor
             _authorRepository = authorRepository;
         }
 
-        public async Task<Author> Handle(AddAuthorCommand request, CancellationToken cancellationToken)
+        public async Task<OperationResult<Author>> Handle(AddAuthorCommand request, CancellationToken cancellationToken)
         {
             if (request.Author == null)
             {
-                throw new ArgumentNullException(nameof(request.Author), "Author cannot be null.");
+                return OperationResult<Author>.FailureResult("Author cannot be null.");
             }
             if (string.IsNullOrWhiteSpace(request.Author.Name))
             {
-                throw new ArgumentException("Name cannot be empty.", nameof(request.Author));
+                return OperationResult<Author>.FailureResult("Author name cannot be empty.");
             }
 
             _authorRepository.AddAuthor(request.Author);
-            return await Task.FromResult(request.Author);
+            return OperationResult<Author>.SuccessResult(request.Author);
         }
     }
 }

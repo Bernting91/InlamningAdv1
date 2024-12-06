@@ -3,6 +3,9 @@ using Domain;
 using Infrastructure.Database;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
+using NUnit.Framework;
+using System;
+using System.Threading.Tasks;
 
 namespace TestProject.Authors.Commands
 {
@@ -29,10 +32,11 @@ namespace TestProject.Authors.Commands
             Author authorToAdd = new Author(Guid.NewGuid(), "New Author");
 
             // Act
-            Author? authorAdded = await _mediator.Send(new AddAuthorCommand(authorToAdd));
+            OperationResult<Author> result = await _mediator.Send(new AddAuthorCommand(authorToAdd));
 
             // Assert
-            Assert.That(authorAdded, Is.Not.Null);
+            Assert.That(result.IsSuccessfull, Is.True);
+            Assert.That(result.Data, Is.Not.Null);
             Assert.That(_fakeDatabase.Authors, Contains.Item(authorToAdd));
         }
 
@@ -43,7 +47,8 @@ namespace TestProject.Authors.Commands
             Author? authorToAdd = null;
 
             // Act & Assert
-            Assert.ThrowsAsync<ArgumentNullException>(() => _mediator.Send(new AddAuthorCommand(authorToAdd)));
+            var ex = Assert.ThrowsAsync<ArgumentNullException>(() => _mediator.Send(new AddAuthorCommand(authorToAdd)));
+            Assert.That(ex.ParamName, Is.EqualTo("author"));
         }
     }
 }

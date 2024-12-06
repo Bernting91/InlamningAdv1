@@ -36,21 +36,19 @@ namespace TestProject.Books.Commands
 
             // Act
             bookToTest.Title = "Updated Title";
-            Book? bookUpdated = await _mediator.Send(new UpdateBookCommand(Guid.NewGuid(),bookToTest));
+            OperationResult<Book> result = await _mediator.Send(new UpdateBookCommand(bookToTest.Id, bookToTest));
 
             // Assert
-            Assert.That(bookUpdated, Is.Not.Null);
-            Assert.That(bookUpdated.Title, Is.EqualTo("Updated Title"));
+            Assert.That(result.IsSuccessfull, Is.True);
+            Assert.That(result.Data, Is.Not.Null);
+            Assert.That(result.Data.Title, Is.EqualTo("Updated Title"));
         }
 
         [Test]
         public void When_Method_UpdateBook_isCalled_With_InvalidBook_Then_BookNotUpdated()
         {
-            // Arrange
-            Book? bookToTest = null;
-
             // Act & Assert
-            Assert.ThrowsAsync<ArgumentNullException>(() => _mediator.Send(new UpdateBookCommand(Guid.NewGuid(),bookToTest)));
+            Assert.ThrowsAsync<ArgumentNullException>(() => _mediator.Send(new UpdateBookCommand(Guid.NewGuid(), null)));
         }
     }
 }

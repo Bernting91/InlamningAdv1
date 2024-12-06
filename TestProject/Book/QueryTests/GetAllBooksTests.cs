@@ -33,11 +33,12 @@ namespace TestProject.Books.Queries
             var expectedBooks = _fakeDatabase.Books;
 
             // Act
-            IEnumerable<Book> booksReturned = await _mediator.Send(new GetAllBooksQuery());
+            OperationResult<List<Book>> result = await _mediator.Send(new GetAllBooksQuery());
 
             // Assert
-            Assert.That(booksReturned, Is.Not.Null);
-            Assert.That(booksReturned, Is.EquivalentTo(expectedBooks));
+            Assert.That(result.IsSuccessfull, Is.True);
+            Assert.That(result.Data, Is.Not.Null);
+            Assert.That(result.Data, Is.EquivalentTo(expectedBooks));
         }
 
         [Test]
@@ -46,9 +47,9 @@ namespace TestProject.Books.Queries
             // Act & Assert
             Assert.ThrowsAsync<InvalidOperationException>(async () =>
             {
-                IEnumerable<Book> booksReturned = await _mediator.Send(new GetAllBooksQuery());
+                OperationResult<List<Book>> result = await _mediator.Send(new GetAllBooksQuery());
 
-                if (booksReturned.Any())
+                if (result.Data.Any())
                 {
                     throw new InvalidOperationException("Books were returned when none were expected.");
                 }

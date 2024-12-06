@@ -5,7 +5,7 @@ using System.Security.Cryptography;
 
 namespace Application.Books.Queries.GetAllBooks
 {
-    public class GetAllBooksQueryHandler : IRequestHandler<GetAllBooksQuery, List<Book>>
+    public class GetAllBooksQueryHandler : IRequestHandler<GetAllBooksQuery, OperationResult<List<Book>>>
     {
         private readonly IBookRepository _bookRepository;
 
@@ -14,9 +14,14 @@ namespace Application.Books.Queries.GetAllBooks
             _bookRepository = bookRepository;
         }
 
-        public Task<List<Book>> Handle(GetAllBooksQuery request, CancellationToken cancellationToken)
+        public async Task<OperationResult<List<Book>>> Handle(GetAllBooksQuery request, CancellationToken cancellationToken)
         {
-            return _bookRepository.GetAllBooks();
+            var books = await _bookRepository.GetAllBooks();
+            if (books == null)
+            {
+                return OperationResult<List<Book>>.FailureResult("No books found.");
+            }
+            return OperationResult<List<Book>>.SuccessResult(books);
         }
     }
 }

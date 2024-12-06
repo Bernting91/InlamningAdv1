@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Application.Users.Commands.RemoveUser
 {
-    public record RemoveUserCommand(Guid Id) : IRequest<string>
+    public record RemoveUserCommand(Guid Id) : IRequest<OperationResult<string>>
     {
     }
 }

@@ -33,26 +33,27 @@ namespace TestProject.Authors.Queries
             var expectedAuthors = _fakeDatabase.Authors;
 
             // Act
-            IEnumerable<Author> authorsReturned = await _mediator.Send(new GetAllAuthorsQuery());
+            OperationResult<IEnumerable<Author>> result = await _mediator.Send(new GetAllAuthorsQuery());
 
             // Assert
-            Assert.That(authorsReturned, Is.Not.Null);
-            Assert.That(authorsReturned, Is.EquivalentTo(expectedAuthors));
+            Assert.That(result.IsSuccessfull, Is.True);
+            Assert.That(result.Data, Is.Not.Null);
+            Assert.That(result.Data, Is.EquivalentTo(expectedAuthors));
         }
 
         [Test]
-        public void When_Method_GetAllAuthors_isCalled_Then_NoAuthorsReturned()
+        public async Task When_Method_GetAllAuthors_isCalled_Then_NoAuthorsReturned()
         {
-            // Act & Assert
-            Assert.ThrowsAsync<InvalidOperationException>(async () =>
-            {
-                IEnumerable<Author> authorsReturned = await _mediator.Send(new GetAllAuthorsQuery());
+            // Arrange
+            _fakeDatabase.Authors.Clear();
 
-                if (authorsReturned.Any())
-                {
-                    throw new InvalidOperationException("Authors were returned when none were expected.");
-                }
-            });
+            // Act
+            OperationResult<IEnumerable<Author>> result = await _mediator.Send(new GetAllAuthorsQuery());
+
+            // Assert
+            Assert.That(result.IsSuccessfull, Is.False);
+            Assert.That(result.Data, Is.Null);
+            Assert.That(result.ErrorMessage, Is.EqualTo("No authors found"));
         }
     }
 }
