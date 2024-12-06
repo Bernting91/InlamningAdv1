@@ -29,7 +29,7 @@ namespace TestProject.Authors.Queries
         public async Task When_Method_GetAuthorById_isCalled_Then_AuthorReturned()
         {
             // Arrange
-            Author authorToFind = new Author(1, "Author to Find");
+            Author authorToFind = new Author(Guid.NewGuid(), "Author to Find");
             _fakeDatabase.Authors.Add(authorToFind);
 
             // Act
@@ -44,7 +44,7 @@ namespace TestProject.Authors.Queries
         public void When_Method_GetAuthorById_isCalled_With_InvalidId_Then_ExceptionThrown()
         {
             // Act & Assert
-            Assert.ThrowsAsync<ArgumentException>(() => _mediator.Send(new GetAuthorByIdQuery(-1)));
+            Assert.ThrowsAsync<ArgumentException>(() => _mediator.Send(new GetAuthorByIdQuery(Guid.NewGuid())));
         }
     }
 }

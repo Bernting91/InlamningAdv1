@@ -1,18 +1,19 @@
-﻿using Domain;
-using Infrastructure.Database;
+﻿using Application.Interfaces.RepositoryInterfaces;
+using Domain;
 using MediatR;
 
 namespace Application.Authors.Commands.AddAuthor
 {
-
-public class AddAuthorCommandHandler : IRequestHandler<AddAuthorCommand, Author>
+    public class AddAuthorCommandHandler : IRequestHandler<AddAuthorCommand, Author>
     {
-        private readonly FakeDatabase _fakeDatabase;
-        public AddAuthorCommandHandler(FakeDatabase fakeDatabase)
+        private readonly IAuthorRepository _authorRepository;
+
+        public AddAuthorCommandHandler(IAuthorRepository authorRepository)
         {
-            _fakeDatabase = fakeDatabase;
+            _authorRepository = authorRepository;
         }
-        public Task<Author> Handle(AddAuthorCommand request, CancellationToken cancellationToken)
+
+        public async Task<Author> Handle(AddAuthorCommand request, CancellationToken cancellationToken)
         {
             if (request.Author == null)
             {
@@ -22,9 +23,9 @@ public class AddAuthorCommandHandler : IRequestHandler<AddAuthorCommand, Author>
             {
                 throw new ArgumentException("Name cannot be empty.", nameof(request.Author));
             }
-            _fakeDatabase.Authors.Add(request.Author);
-            return Task.FromResult(request.Author);
+
+            _authorRepository.AddAuthor(request.Author);
+            return await Task.FromResult(request.Author);
         }
     }
-
 }

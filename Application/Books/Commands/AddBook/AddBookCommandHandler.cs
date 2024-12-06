@@ -1,18 +1,16 @@
-﻿using Domain;
-using Infrastructure.Database;
+﻿using Application.Interfaces.RepositoryInterfaces;
+using Domain;
 using MediatR;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Application.Books.Commands.AddBook
 {
     public class AddBookCommandHandler : IRequestHandler<AddBookCommand, Book>
     {
-        private readonly FakeDatabase _fakeDatabase;
+        private readonly IBookRepository _bookRepository;
 
-        public AddBookCommandHandler(FakeDatabase fakeDatabase)
+        public AddBookCommandHandler(IBookRepository bookRepository)
         {
-            _fakeDatabase = fakeDatabase;
+            _bookRepository = bookRepository;
         }
 
         public Task<Book> Handle(AddBookCommand request, CancellationToken cancellationToken)
@@ -26,7 +24,7 @@ namespace Application.Books.Commands.AddBook
                 throw new ArgumentException("Title cannot be empty.", nameof(request.Book));
             }
 
-            _fakeDatabase.Books.Add(request.Book);
+            _bookRepository.AddBook(request.Book);
             return Task.FromResult(request.Book);
         }
     }

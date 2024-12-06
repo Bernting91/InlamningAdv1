@@ -3,5 +3,5 @@ using MediatR;
 
 namespace Application.Books.Commands.RemoveBook
 {
-    public record RemoveBookCommand(Book Book) : IRequest<Book?>;
+    public record RemoveBookCommand(Guid Id) : IRequest<Book?>;
 }

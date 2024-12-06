@@ -1,30 +1,26 @@
-﻿using Domain;
-using Infrastructure.Database;
+﻿using Application.Interfaces.RepositoryInterfaces;
+using Domain;
 using MediatR;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
+
 
 namespace Application.Books.Queries.GetbookbyID
 {
     public class GetBookByIdQueryHandler : IRequestHandler<GetBookByIdQuery, Book?>
     {
-        private readonly FakeDatabase _fakeDatabase;
+        private readonly IBookRepository _bookRepository;
 
-        public GetBookByIdQueryHandler(FakeDatabase fakeDatabase)
+        public GetBookByIdQueryHandler(IBookRepository bookRepository)
         {
-            _fakeDatabase = fakeDatabase;
+            _bookRepository = bookRepository;
         }
 
         public Task<Book?> Handle(GetBookByIdQuery request, CancellationToken cancellationToken)
         {
-            if (request.Id <= 0)
+            if (request.Id == Guid.Empty)
             {
-                throw new ArgumentException("Invalid book ID");
+                throw new System.ArgumentException("Id cannot be empty.", nameof(request.Id));
             }
-
-            Book? book = _fakeDatabase.Books.Find(book => book.Id == request.Id);
-            return Task.FromResult(book);
+            return _bookRepository.GetBookById(request.Id);
         }
     }
 }

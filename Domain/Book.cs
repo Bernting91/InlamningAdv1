@@ -2,19 +2,18 @@
 {
     public class Book
     {
-        public int Id { get; set; }
+        public Guid Id { get; set; }
         public string? Title { get; set; }
         public string? Description { get; set; }
         public Author Author { get; set; }
 
-        // Parameterless constructor for EF Core
         public Book() { }
 
-        public Book(int id, string title, string description, Author author)
+        public Book(Guid id, string title, string description, Author author)
         {
-            if (id <= 0)
+            if (id == Guid.Empty)
             {
-                throw new ArgumentException("Id must be greater than zero.", nameof(id));
+                throw new ArgumentException("Id must be a valid GUID.", nameof(id));
             }
 
             if (string.IsNullOrWhiteSpace(title))

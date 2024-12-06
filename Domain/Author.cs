@@ -1,17 +1,15 @@
-﻿using System;
-
-namespace Domain
+﻿namespace Domain
 {
     public class Author
     {
-        public int Id { get; set; }
+        public Guid Id { get; set; }
         public string Name { get; set; }
 
-        public Author(int id, string name)
+        public Author(Guid id, string name)
         {
-            if (id <= 0)
+            if (id == Guid.Empty)
             {
-                throw new ArgumentException("Id must be greater than zero.", nameof(id));
+                throw new ArgumentException("Id must be a valid GUID.", nameof(id));
             }
 
             if (string.IsNullOrWhiteSpace(name))

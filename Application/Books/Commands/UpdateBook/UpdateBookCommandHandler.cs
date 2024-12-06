@@ -1,35 +1,30 @@
-﻿using Domain;
-using Infrastructure.Database;
+﻿using Application.Interfaces.RepositoryInterfaces;
+using Domain;
 using MediatR;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Application.Books.Commands.UpdateBook
 {
     public class UpdateBookCommandHandler : IRequestHandler<UpdateBookCommand, Book?>
     {
-        private readonly FakeDatabase _fakeDatabase;
+        private readonly IBookRepository _bookRepository;
 
-        public UpdateBookCommandHandler(FakeDatabase fakeDatabase)
+        public UpdateBookCommandHandler(IBookRepository bookRepository)
         {
-            _fakeDatabase = fakeDatabase;
+            _bookRepository = bookRepository;
         }
 
-        public Task<Book?> Handle(UpdateBookCommand request, CancellationToken cancellationToken)
+        public async Task<Book?> Handle(UpdateBookCommand request, CancellationToken cancellationToken)
         {
-            if (request.Book == null)
+            if (request.Book.Id == Guid.Empty)
             {
-                throw new ArgumentNullException(nameof(request.Book), "Book cannot be null");
+                throw new System.ArgumentException("Id cannot be empty.", nameof(request.Book.Id));
             }
-
-            Book? bookToUpdate = _fakeDatabase.Books.Find(book => book.Id == request.Book.Id);
-            if (bookToUpdate != null)
+            if (string.IsNullOrWhiteSpace(request.Book.Title))
             {
-                bookToUpdate.Title = request.Book.Title;
-                bookToUpdate.Description = request.Book.Description;
+                throw new System.ArgumentException("Title cannot be empty.", nameof(request.Book.Title));
             }
-            return Task.FromResult(bookToUpdate);
+            var book = await _bookRepository.UpdateBook(request.id, request.Book);
+            return book;
         }
     }
 }

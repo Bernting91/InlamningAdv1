@@ -29,8 +29,8 @@ namespace TestProject.Books.Commands
         public async Task When_Method_AddNewBook_isCalled_Then_BookAddedToList()
         {
             // Arrange
-            Author author = new Author(1, "Dr.Book McBookie");
-            Book bookToTest = new Book(1, "RobertBook", "Book of life", author);
+            Author author = new Author(Guid.NewGuid(), "Dr.Book McBookie");
+            Book bookToTest = new Book(Guid.NewGuid(), "RobertBook", "Book of life", author);
 
             // Act
             Book bookCreated = await _mediator.Send(new AddBookCommand(bookToTest));
@@ -44,8 +44,8 @@ namespace TestProject.Books.Commands
         public void When_Method_AddNewBook_isCalled_With_EmptyTitle_Then_ArgumentExceptionIsThrown()
         {
             // Arrange
-            Author author = new Author(1, "Dr.Book McBookie");
-            Book bookToTest = new Book(1, "", "Description", author);
+            Author author = new Author(Guid.NewGuid(), "Dr.Book McBookie");
+            Book bookToTest = new Book(Guid.NewGuid(), "", "Description", author);
 
             // Act & Assert
             Assert.ThrowsAsync<ArgumentException>(() => _mediator.Send(new AddBookCommand(bookToTest)));
