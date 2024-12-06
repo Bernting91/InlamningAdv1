@@ -1,21 +1,17 @@
-﻿using Domain;
-using Infrastructure.Database;
+﻿using Application.Interfaces.RepositoryInterfaces;
+using Domain;
 using MediatR;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 
 namespace Application.Users.Commands.AddUser
 {
     internal sealed class AddNewUserCommandHandler : IRequestHandler<AddNewUserCommand, User>
     {
-        private readonly FakeDatabase _fakeDatabase;
+        private readonly IUserRepository _userRepository;
 
-        public AddNewUserCommandHandler (FakeDatabase fakeDatabase)
+        public AddNewUserCommandHandler (IUserRepository userRepository)
         {
-            _fakeDatabase = fakeDatabase;
+            _userRepository = userRepository;
         }
 
         public Task<User> Handle(AddNewUserCommand request, CancellationToken cancellationToken)
@@ -27,7 +23,7 @@ namespace Application.Users.Commands.AddUser
                 Password = request.NewUser.Password,
             };
 
-            _fakeDatabase.Users.Add(userToCreate);
+            _userRepository.AddUser(userToCreate);
             return Task.FromResult(userToCreate);
             
         }

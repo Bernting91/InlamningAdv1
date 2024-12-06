@@ -1,21 +1,22 @@
-﻿using Domain;
-using Infrastructure.Database;
+﻿using Application.Interfaces.RepositoryInterfaces;
+using Domain;
 using MediatR;
 
 namespace Application.Authors.Queries.GetAllAuthors
 {
     public class GetAllAuthorsQueryHandler : IRequestHandler<GetAllAuthorsQuery, IEnumerable<Author>>
     {
-        private readonly FakeDatabase _fakeDatabase;
+        private readonly IAuthorRepository _authorRepository;
 
-        public GetAllAuthorsQueryHandler(FakeDatabase fakeDatabase)
+        public GetAllAuthorsQueryHandler(IAuthorRepository authorRepository)
         {
-            _fakeDatabase = fakeDatabase;
+            _authorRepository = authorRepository;
         }
 
-        public Task<IEnumerable<Author>> Handle(GetAllAuthorsQuery request, CancellationToken cancellationToken)
+        public async Task<IEnumerable<Author>> Handle(GetAllAuthorsQuery request, CancellationToken cancellationToken)
         {
-            return Task.FromResult<IEnumerable<Author>>(_fakeDatabase.Authors);
+            var authors = await _authorRepository.GetAllAuthors();
+            return authors;
         }
     }
 }

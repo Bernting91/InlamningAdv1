@@ -30,13 +30,13 @@ namespace TestProject.Books.Commands
         public async Task When_Method_UpdateBook_isCalled_Then_BookUpdated()
         {
             // Arrange
-            Author author = new Author(1, "Dr.Book McBookie");
-            Book bookToTest = new Book(1, "RobertCook", "Book of life", author);
+            Author author = new Author(Guid.NewGuid(), "Dr.Book McBookie");
+            Book bookToTest = new Book(Guid.NewGuid(), "RobertCook", "Book of life", author);
             await _mediator.Send(new AddBookCommand(bookToTest));
 
             // Act
             bookToTest.Title = "Updated Title";
-            Book? bookUpdated = await _mediator.Send(new UpdateBookCommand(bookToTest));
+            Book? bookUpdated = await _mediator.Send(new UpdateBookCommand(Guid.NewGuid(),bookToTest));
 
             // Assert
             Assert.That(bookUpdated, Is.Not.Null);
@@ -50,7 +50,7 @@ namespace TestProject.Books.Commands
             Book? bookToTest = null;
 
             // Act & Assert
-            Assert.ThrowsAsync<ArgumentNullException>(() => _mediator.Send(new UpdateBookCommand(bookToTest)));
+            Assert.ThrowsAsync<ArgumentNullException>(() => _mediator.Send(new UpdateBookCommand(Guid.NewGuid(),bookToTest)));
         }
     }
 }

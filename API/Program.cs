@@ -8,6 +8,7 @@ using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Swashbuckle.AspNetCore.Annotations;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -38,7 +39,6 @@ builder.Services.AddAuthorization(options =>
     {
         Policy.AuthenticationSchemes.Add(JwtBearerDefaults.AuthenticationScheme);
         Policy.RequireAuthenticatedUser();
-
     });
 });
 
@@ -64,36 +64,39 @@ builder.Services.AddSwaggerGen(c =>
                     Id = "Bearer"
                 }
             },
-            Array.Empty<String>()
+            Array.Empty<string>()
         }
     });
+
+    // Enable annotations
+    c.EnableAnnotations();
 });
 
-    // Add services to the container.
-    builder.Services.AddControllers();
-    builder.Services.AddEndpointsApiExplorer();
-    builder.Services.AddSwaggerGen();
+// Add services to the container.
+builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 
-    // Register MediatR
-    builder.Services.AddApplication();
-    builder.Services.AddInfrastructure(builder.Configuration.GetConnectionString("DefaultConnection")!);
+// Register MediatR
+builder.Services.AddApplication();
+builder.Services.AddInfrastructure(builder.Configuration.GetConnectionString("DefaultConnection")!);
 
-    // Register FakeDatabase
-    builder.Services.AddSingleton<FakeDatabase>();
+// Register FakeDatabase
+builder.Services.AddSingleton<FakeDatabase>();
 
-    var app = builder.Build();
+var app = builder.Build();
 
-    // Configure the HTTP request pipeline.
-    if (app.Environment.IsDevelopment())
-    {
-        app.UseSwagger();
-        app.UseSwaggerUI();
-    }
+// Configure the HTTP request pipeline.
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
 
-    app.UseHttpsRedirection();
+app.UseHttpsRedirection();
 
-    app.UseAuthorization();
+app.UseAuthorization();
 
-    app.MapControllers();
+app.MapControllers();
 
-    app.Run();
+app.Run();

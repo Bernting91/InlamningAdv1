@@ -30,12 +30,12 @@ namespace TestProject.Books.Commands
         public async Task When_Method_RemoveBook_isCalled_Then_BookRemovedFromList()
         {
             // Arrange
-            Author author = new Author(1, "Dr.Book McBookie");
-            Book bookToTest = new Book(1, "RobertCook", "Book of life", author);
+            Author author = new Author(Guid.NewGuid(), "Dr.Book McBookie");
+            Book bookToTest = new Book(Guid.NewGuid(), "RobertCook", "Book of life", author);
             await _mediator.Send(new AddBookCommand(bookToTest));
 
             // Act
-            Book? bookRemoved = await _mediator.Send(new RemoveBookCommand(bookToTest));
+            Book? bookRemoved = await _mediator.Send(new RemoveBookCommand(bookToTest.Id));
 
             // Assert
             Assert.That(bookRemoved, Is.Not.Null);
@@ -48,7 +48,7 @@ namespace TestProject.Books.Commands
             Book? bookToTest = null;
 
             // Act & Assert
-            Assert.ThrowsAsync<ArgumentNullException>(() => _mediator.Send(new RemoveBookCommand(bookToTest)));
+            Assert.ThrowsAsync<ArgumentNullException>(() => _mediator.Send(new RemoveBookCommand(Guid.Empty)));
         }
     }
 }

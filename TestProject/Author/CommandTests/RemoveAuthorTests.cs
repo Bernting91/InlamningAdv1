@@ -29,11 +29,11 @@ namespace TestProject.Authors.Commands
         public async Task When_Method_RemoveAuthor_isCalled_Then_AuthorRemoved()
         {
             // Arrange
-            Author authorToRemove = new Author(1, "Author to Remove");
+            Author authorToRemove = new Author(Guid.NewGuid(), "Author to Remove");
             _fakeDatabase.Authors.Add(authorToRemove);
 
             // Act
-            Author? authorRemoved = await _mediator.Send(new RemoveAuthorCommand(authorToRemove));
+            Author? authorRemoved = await _mediator.Send(new RemoveAuthorCommand(Guid.NewGuid()));
 
             // Assert
             Assert.That(authorRemoved, Is.Not.Null);
@@ -47,7 +47,7 @@ namespace TestProject.Authors.Commands
             Author? authorToRemove = null;
 
             // Act & Assert
-            Assert.ThrowsAsync<ArgumentNullException>(() => _mediator.Send(new RemoveAuthorCommand(authorToRemove)));
+            Assert.ThrowsAsync<ArgumentNullException>(() => _mediator.Send(new RemoveAuthorCommand(Guid.NewGuid())));
         }
     }
 }

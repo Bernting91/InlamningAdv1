@@ -1,31 +1,33 @@
-﻿using Domain;
-using Infrastructure.Database;
+﻿using Application.Interfaces.RepositoryInterfaces;
+using Domain;
 using MediatR;
 
 namespace Application.Authors.Commands.RemoveAuthor
 {
-    public class RemoveAuthorCommandHandler : IRequestHandler<RemoveAuthorCommand, Author>
+    public class RemoveAuthorCommandHandler : IRequestHandler<RemoveAuthorCommand, Author?>
     {
-        private readonly FakeDatabase _fakeDatabase;
-        public RemoveAuthorCommandHandler(FakeDatabase fakeDatabase)
+        private readonly IAuthorRepository _authorRepository;
+
+        public RemoveAuthorCommandHandler(IAuthorRepository authorRepository)
         {
-            _fakeDatabase = fakeDatabase;
+            _authorRepository = authorRepository;
         }
-        public Task<Author?> Handle(RemoveAuthorCommand request, CancellationToken cancellationToken)
+
+        public async Task<Author?> Handle(RemoveAuthorCommand request, CancellationToken cancellationToken)
         {
-            if (request.Author == null)
+            if (request.Id == Guid.Empty)
             {
-                throw new ArgumentNullException(nameof(request.Author), "Author cannot be null");
+                throw new ArgumentException("Id cannot be empty.", nameof(request.Id));
             }
 
-            if (_fakeDatabase.Authors.Remove(request.Author))
+            var author = await _authorRepository.GetAuthorById(request.Id);
+            if (author == null)
             {
-                return Task.FromResult<Author?>(request.Author);
+                throw new KeyNotFoundException("Author not found.");
             }
-            else
-            {
-                return Task.FromResult<Author?>(null);
-            }
+
+            await _authorRepository.DeleteAuthorById(request.Id);
+            return author;
         }
     }
 }

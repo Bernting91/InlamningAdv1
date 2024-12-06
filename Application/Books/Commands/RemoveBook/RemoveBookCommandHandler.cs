@@ -1,5 +1,5 @@
-﻿using Domain;
-using Infrastructure.Database;
+﻿using Application.Interfaces.RepositoryInterfaces;
+using Domain;
 using MediatR;
 using System;
 using System.Threading;
@@ -9,28 +9,28 @@ namespace Application.Books.Commands.RemoveBook
 {
     public class RemoveBookCommandHandler : IRequestHandler<RemoveBookCommand, Book?>
     {
-        private readonly FakeDatabase _fakeDatabase;
+        private readonly IBookRepository _bookRepository;
 
-        public RemoveBookCommandHandler(FakeDatabase fakeDatabase)
+        public RemoveBookCommandHandler(IBookRepository bookRepository)
         {
-            _fakeDatabase = fakeDatabase;
+            _bookRepository = bookRepository;
         }
 
-        public Task<Book?> Handle(RemoveBookCommand request, CancellationToken cancellationToken)
+        public async Task<Book?> Handle(RemoveBookCommand request, CancellationToken cancellationToken)
         {
-            if (request.Book == null)
+            if (request.Id == Guid.Empty)
             {
-                throw new ArgumentNullException(nameof(request.Book), "Book cannot be null");
+                throw new ArgumentNullException(nameof(request.Id), "Book ID cannot be null or empty.");
             }
 
-            if (_fakeDatabase.Books.Remove(request.Book))
+            var book = await _bookRepository.GetBookById(request.Id);
+            if (book == null)
             {
-                return Task.FromResult<Book?>(request.Book);
+                throw new KeyNotFoundException("Book not found.");
             }
-            else
-            {
-                return Task.FromResult<Book?>(null);
-            }
+
+            await _bookRepository.DeleteBookById(request.Id);
+            return book;
         }
     }
 }

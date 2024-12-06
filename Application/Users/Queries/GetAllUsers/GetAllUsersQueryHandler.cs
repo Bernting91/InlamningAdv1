@@ -1,27 +1,23 @@
-﻿using Application.Books.Queries.GetbookbyID;
+﻿
+using Application.Interfaces.RepositoryInterfaces;
 using Domain;
-using Infrastructure.Database;
 using MediatR;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 
 namespace Application.Users.Queries.GetAllUsers
 {
-    public class GetAllUsersQueryHandler : IRequestHandler<GetAllUsersQuery, IEnumerable<User>>
+    public class GetAllUsersQueryHandler : IRequestHandler<GetAllUsersQuery, List<User>>
     {
-        private readonly FakeDatabase _fakeDatabase;
+        private readonly IUserRepository _userRepository;
 
-        public GetAllUsersQueryHandler(FakeDatabase fakeDatabase)
+        public GetAllUsersQueryHandler(IUserRepository userRepository)
         {
-            _fakeDatabase = fakeDatabase;
+            _userRepository = userRepository;
         }
 
-        public Task<IEnumerable<User>> Handle(GetAllUsersQuery request, CancellationToken cancellationToken)
+        public Task<List<User>> Handle(GetAllUsersQuery request, CancellationToken cancellationToken)
         {
-            return Task.FromResult<IEnumerable<User>>(_fakeDatabase.Users);
+            return _userRepository.GetAllUsers();
         }
     }
 }

@@ -1,21 +1,22 @@
-﻿using Domain;
-using Infrastructure.Database;
+﻿using Application.Interfaces.RepositoryInterfaces;
+using Domain;
 using MediatR;
+using System.Security.Cryptography;
 
 namespace Application.Books.Queries.GetAllBooks
 {
-    public class GetAllBooksQueryHandler : IRequestHandler<GetAllBooksQuery, IEnumerable<Book>>
+    public class GetAllBooksQueryHandler : IRequestHandler<GetAllBooksQuery, List<Book>>
     {
-        private readonly FakeDatabase _fakeDatabase;
+        private readonly IBookRepository _bookRepository;
 
-        public GetAllBooksQueryHandler(FakeDatabase fakeDatabase)
+        public GetAllBooksQueryHandler(IBookRepository bookRepository)
         {
-            _fakeDatabase = fakeDatabase;
+            _bookRepository = bookRepository;
         }
 
-        public Task<IEnumerable<Book>> Handle(GetAllBooksQuery request, CancellationToken cancellationToken)
+        public Task<List<Book>> Handle(GetAllBooksQuery request, CancellationToken cancellationToken)
         {
-            return Task.FromResult<IEnumerable<Book>>(_fakeDatabase.Books);
+            return _bookRepository.GetAllBooks();
         }
     }
 }

@@ -3,9 +3,6 @@ using Domain;
 using Infrastructure.Database;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
-using NUnit.Framework;
-using System;
-using System.Threading.Tasks;
 
 namespace TestProject.Authors.Commands
 {
@@ -29,7 +26,7 @@ namespace TestProject.Authors.Commands
         public async Task When_Method_AddAuthor_isCalled_Then_AuthorAdded()
         {
             // Arrange
-            Author authorToAdd = new Author(1, "New Author");
+            Author authorToAdd = new Author(Guid.NewGuid(), "New Author");
 
             // Act
             Author? authorAdded = await _mediator.Send(new AddAuthorCommand(authorToAdd));

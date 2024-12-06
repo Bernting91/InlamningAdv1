@@ -30,12 +30,12 @@ namespace TestProject.Books.Queries
         public async Task When_Method_GetBookById_isCalled_Then_BookReturned()
         {
             // Arrange
-            Author author = new Author(1, "Dr.Book McBookie");
-            Book bookToTest = new Book(1, "RobertCook", "Book of life", author);
+            Author author = new Author(Guid.NewGuid(), "Dr.Book McBookie");
+            Book bookToTest = new Book(Guid.NewGuid(), "RobertCook", "Book of life", author);
             await _mediator.Send(new AddBookCommand(bookToTest));
 
             // Act
-            Book? bookReturned = await _mediator.Send(new GetBookByIdQuery(1));
+            Book? bookReturned = await _mediator.Send(new GetBookByIdQuery(bookToTest.Id));
 
             // Assert
             Assert.That(bookReturned, Is.Not.Null);
@@ -45,7 +45,7 @@ namespace TestProject.Books.Queries
         public void When_Method_GetBookById_isCalled_With_InvalidBook_Then_BookNotReturned()
         {
             // Arrange
-            int invalidId = -1;
+            Guid invalidId = Guid.NewGuid();
 
             // Act & Assert
             Assert.ThrowsAsync<ArgumentException>(() => _mediator.Send(new GetBookByIdQuery(invalidId)));

@@ -29,26 +29,28 @@ namespace TestProject.Authors.Commands
         public async Task When_Method_UpdateAuthor_isCalled_Then_AuthorUpdated()
         {
             // Arrange
-            Author authorToUpdate = new Author(1, "Original Name");
+            var authorId = Guid.NewGuid();
+            Author authorToUpdate = new Author(authorId, "Original Name");
             _fakeDatabase.Authors.Add(authorToUpdate);
 
             // Act
-            authorToUpdate.Name = "Updated Name";
-            Author? authorUpdated = await _mediator.Send(new UpdateAuthorCommand(authorToUpdate));
+            var updatedName = "Updated Name";
+            Author? authorUpdated = await _mediator.Send(new UpdateAuthorCommand(authorId, updatedName));
 
             // Assert
             Assert.That(authorUpdated, Is.Not.Null);
-            Assert.That(authorUpdated.Name, Is.EqualTo("Updated Name"));
+            Assert.That(authorUpdated.Name, Is.EqualTo(updatedName));
         }
 
         [Test]
         public void When_Method_UpdateAuthor_isCalled_With_InvalidAuthor_Then_AuthorNotUpdated()
         {
             // Arrange
-            Author? authorToUpdate = null;
+            var invalidAuthorId = Guid.NewGuid();
+            var invalidAuthorName = "Invalid Author";
 
             // Act & Assert
-            Assert.ThrowsAsync<ArgumentNullException>(() => _mediator.Send(new UpdateAuthorCommand(authorToUpdate)));
+            Assert.ThrowsAsync<KeyNotFoundException>(() => _mediator.Send(new UpdateAuthorCommand(invalidAuthorId, invalidAuthorName)));
         }
     }
 }
