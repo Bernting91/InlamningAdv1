@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Application.Users.Commands.AddUser
 {
-    internal sealed class AddNewUserCommandHandler : IRequestHandler<AddNewUserCommand, OperationResult<User>>
+    public class AddNewUserCommandHandler : IRequestHandler<AddNewUserCommand, OperationResult<User>>
     {
         private readonly IUserRepository _userRepository;
 
@@ -20,6 +20,11 @@ namespace Application.Users.Commands.AddUser
         {
             try
             {
+                if (string.IsNullOrWhiteSpace(request.NewUser.UserName))
+                {
+                    return OperationResult<User>.FailureResult("UserName cannot be empty.");
+                }
+
                 User userToCreate = new()
                 {
                     Id = Guid.NewGuid(),

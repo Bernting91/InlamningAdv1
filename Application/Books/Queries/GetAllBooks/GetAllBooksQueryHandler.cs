@@ -17,7 +17,7 @@ namespace Application.Books.Queries.GetAllBooks
         public async Task<OperationResult<List<Book>>> Handle(GetAllBooksQuery request, CancellationToken cancellationToken)
         {
             var books = await _bookRepository.GetAllBooks();
-            if (books == null)
+            if (books == null || !books.Any())
             {
                 return OperationResult<List<Book>>.FailureResult("No books found.");
             }

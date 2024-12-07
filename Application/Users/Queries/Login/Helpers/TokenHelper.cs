@@ -11,15 +11,20 @@ namespace Application.Users.Queries.Login.Helpers
     {
         private readonly IConfiguration _configuration;
 
-        public TokenHelper (IConfiguration configuration)
+        public TokenHelper(IConfiguration configuration)
         {
             _configuration = configuration;
         }
 
         public string GenerateJwtToken(User user)
         {
+            var secretKey = _configuration["JwtSettings:SecretKey"];
+            if (string.IsNullOrEmpty(secretKey))
+            {
+                throw new InvalidOperationException("Secret key is not configured.");
+            }
 
-            var key = Encoding.ASCII.GetBytes(_configuration["JwtSettings:SecretKey"]!);
+            var key = Encoding.ASCII.GetBytes(secretKey);
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(new[]

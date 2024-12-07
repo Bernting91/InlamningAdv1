@@ -1,6 +1,7 @@
 ﻿using Application.Authors.Commands.AddAuthor;
+using Application.Interfaces.RepositoryInterfaces;
 using Domain;
-using Infrastructure.Database;
+using FakeItEasy;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
@@ -11,16 +12,16 @@ namespace TestProject.Authors.Commands
 {
     public class AddAuthorCommandHandlerTests
     {
-        private FakeDatabase _fakeDatabase;
         private IMediator _mediator;
+        private IAuthorRepository _authorRepository;
 
         [SetUp]
         public void Setup()
         {
-            _fakeDatabase = new FakeDatabase();
+            _authorRepository = A.Fake<IAuthorRepository>();
             var services = new ServiceCollection();
             services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(AddAuthorCommandHandler).Assembly));
-            services.AddSingleton(_fakeDatabase);
+            services.AddSingleton(_authorRepository);
             var provider = services.BuildServiceProvider();
             _mediator = provider.GetRequiredService<IMediator>();
         }
@@ -30,6 +31,7 @@ namespace TestProject.Authors.Commands
         {
             // Arrange
             Author authorToAdd = new Author(Guid.NewGuid(), "New Author");
+            A.CallTo(() => _authorRepository.AddAuthor(A<Author>.Ignored)).Returns(Task.FromResult(authorToAdd));
 
             // Act
             OperationResult<Author> result = await _mediator.Send(new AddAuthorCommand(authorToAdd));
@@ -37,18 +39,38 @@ namespace TestProject.Authors.Commands
             // Assert
             Assert.That(result.IsSuccessfull, Is.True);
             Assert.That(result.Data, Is.Not.Null);
-            Assert.That(_fakeDatabase.Authors, Contains.Item(authorToAdd));
+            A.CallTo(() => _authorRepository.AddAuthor(authorToAdd)).MustHaveHappenedOnceExactly();
         }
 
         [Test]
-        public void When_Method_AddAuthor_isCalled_With_InvalidAuthor_Then_AuthorNotAdded()
+        public async Task When_AddAuthorCommandHandler_isCalled_Then_AuthorIsAddedToRepository()
         {
             // Arrange
-            Author? authorToAdd = null;
+            Author authorToAdd = new Author(Guid.NewGuid(), "New Author");
+            A.CallTo(() => _authorRepository.AddAuthor(A<Author>.Ignored)).Returns(Task.FromResult(authorToAdd));
 
-            // Act & Assert
-            var ex = Assert.ThrowsAsync<ArgumentNullException>(() => _mediator.Send(new AddAuthorCommand(authorToAdd)));
-            Assert.That(ex.ParamName, Is.EqualTo("author"));
+            // Act
+            OperationResult<Author> result = await _mediator.Send(new AddAuthorCommand(authorToAdd));
+
+            // Assert
+            Assert.That(result.IsSuccessfull, Is.True);
+            Assert.That(result.Data, Is.Not.Null);
+            A.CallTo(() => _authorRepository.AddAuthor(authorToAdd)).MustHaveHappenedOnceExactly();
+        }
+
+        [Test]
+        public async Task When_AddAuthorCommandHandler_isCalled_With_ExistingAuthor_Then_FailureResultIsReturned()
+        {
+            // Arrange
+            Author existingAuthor = new Author(Guid.NewGuid(), "Existing Author");
+            A.CallTo(() => _authorRepository.GetAuthorById(existingAuthor.Id)).Returns(Task.FromResult(existingAuthor));
+
+            // Act
+            OperationResult<Author> result = await _mediator.Send(new AddAuthorCommand(existingAuthor));
+
+            // Assert
+            Assert.That(result.IsSuccessfull, Is.False);
+            Assert.That(result.ErrorMessage, Is.EqualTo("Author already exists."));
         }
     }
 }

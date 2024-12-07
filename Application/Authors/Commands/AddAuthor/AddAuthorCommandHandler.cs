@@ -1,6 +1,8 @@
 ﻿using Application.Interfaces.RepositoryInterfaces;
 using Domain;
 using MediatR;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Application.Authors.Commands.AddAuthor
 {
@@ -24,8 +26,14 @@ namespace Application.Authors.Commands.AddAuthor
                 return OperationResult<Author>.FailureResult("Author name cannot be empty.");
             }
 
-            _authorRepository.AddAuthor(request.Author);
-            return OperationResult<Author>.SuccessResult(request.Author);
+            var existingAuthor = await _authorRepository.GetAuthorById(request.Author.Id);
+            if (existingAuthor != null)
+            {
+                return OperationResult<Author>.FailureResult("Author already exists.");
+            }
+
+            var addedAuthor = await _authorRepository.AddAuthor(request.Author);
+            return OperationResult<Author>.SuccessResult(addedAuthor);
         }
     }
 }

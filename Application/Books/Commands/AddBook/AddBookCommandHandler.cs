@@ -1,6 +1,8 @@
 ﻿using Application.Interfaces.RepositoryInterfaces;
 using Domain;
 using MediatR;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Application.Books.Commands.AddBook
 {
@@ -23,9 +25,13 @@ namespace Application.Books.Commands.AddBook
             {
                 return OperationResult<Book>.FailureResult("Book title cannot be empty.");
             }
+            if (request.Book.Author == null)
+            {
+                return OperationResult<Book>.FailureResult("Author cannot be null.");
+            }
 
-            _bookRepository.AddBook(request.Book);
-            return OperationResult<Book>.SuccessResult(request.Book);
+            var addedBook = await _bookRepository.AddBook(request.Book);
+            return OperationResult<Book>.SuccessResult(addedBook);
         }
     }
 }

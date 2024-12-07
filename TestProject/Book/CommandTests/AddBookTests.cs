@@ -1,6 +1,7 @@
 ﻿using Application.Books.Commands.AddBook;
+using Application.Interfaces.RepositoryInterfaces;
 using Domain;
-using Infrastructure.Database;
+using FakeItEasy;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
@@ -11,16 +12,16 @@ namespace TestProject.Books.Commands
 {
     public class AddBookTests
     {
-        private FakeDatabase _fakeDatabase;
         private IMediator _mediator;
+        private IBookRepository _bookRepository;
 
         [SetUp]
         public void Setup()
         {
-            _fakeDatabase = new FakeDatabase();
+            _bookRepository = A.Fake<IBookRepository>();
             var services = new ServiceCollection();
             services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(AddBookCommandHandler).Assembly));
-            services.AddSingleton(_fakeDatabase);
+            services.AddSingleton(_bookRepository);
             var provider = services.BuildServiceProvider();
             _mediator = provider.GetRequiredService<IMediator>();
         }
@@ -31,6 +32,7 @@ namespace TestProject.Books.Commands
             // Arrange
             Author author = new Author(Guid.NewGuid(), "Dr.Book McBookie");
             Book bookToTest = new Book(Guid.NewGuid(), "RobertBook", "Book of life", author);
+            A.CallTo(() => _bookRepository.AddBook(bookToTest)).Returns(Task.FromResult(bookToTest));
 
             // Act
             OperationResult<Book> result = await _mediator.Send(new AddBookCommand(bookToTest));
@@ -42,14 +44,19 @@ namespace TestProject.Books.Commands
         }
 
         [Test]
-        public void When_Method_AddNewBook_isCalled_With_EmptyTitle_Then_ArgumentExceptionIsThrown()
+        public async Task When_Method_AddNewBook_isCalled_With_EmptyTitle_Then_OperationResultFailure()
         {
             // Arrange
             Author author = new Author(Guid.NewGuid(), "Dr.Book McBookie");
             Book bookToTest = new Book(Guid.NewGuid(), "", "Description", author);
 
-            // Act & Assert
-            Assert.ThrowsAsync<ArgumentException>(() => _mediator.Send(new AddBookCommand(bookToTest)));
+            // Act
+            OperationResult<Book> result = await _mediator.Send(new AddBookCommand(bookToTest));
+
+            // Assert
+            Assert.That(result.IsSuccessfull, Is.False);
+            Assert.That(result.Data, Is.Null);
+            Assert.That(result.ErrorMessage, Is.EqualTo("Book title cannot be empty."));
         }
     }
 }
