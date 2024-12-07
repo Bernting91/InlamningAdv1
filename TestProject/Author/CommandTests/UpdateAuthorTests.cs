@@ -1,6 +1,7 @@
 ﻿using Application.Authors.Commands.UpdateAuthor;
+using Application.Interfaces.RepositoryInterfaces;
 using Domain;
-using Infrastructure.Database;
+using FakeItEasy;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
@@ -11,16 +12,16 @@ namespace TestProject.Authors.Commands
 {
     public class UpdateAuthorCommandHandlerTests
     {
-        private FakeDatabase _fakeDatabase;
         private IMediator _mediator;
+        private IAuthorRepository _authorRepository;
 
         [SetUp]
         public void Setup()
         {
-            _fakeDatabase = new FakeDatabase();
+            _authorRepository = A.Fake<IAuthorRepository>();
             var services = new ServiceCollection();
             services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(UpdateAuthorCommandHandler).Assembly));
-            services.AddSingleton(_fakeDatabase);
+            services.AddSingleton(_authorRepository);
             var provider = services.BuildServiceProvider();
             _mediator = provider.GetRequiredService<IMediator>();
         }
@@ -31,7 +32,8 @@ namespace TestProject.Authors.Commands
             // Arrange
             var authorId = Guid.NewGuid();
             Author authorToUpdate = new Author(authorId, "Original Name");
-            _fakeDatabase.Authors.Add(authorToUpdate);
+            A.CallTo(() => _authorRepository.GetAuthorById(authorId)).Returns(Task.FromResult(authorToUpdate));
+            A.CallTo(() => _authorRepository.UpdateAuthor(authorId, A<Author>.Ignored)).Returns(Task.FromResult(new Author(authorId, "Updated Name")));
 
             // Act
             var updatedName = "Updated Name";
@@ -41,6 +43,7 @@ namespace TestProject.Authors.Commands
             Assert.That(result.IsSuccessfull, Is.True);
             Assert.That(result.Data, Is.Not.Null);
             Assert.That(result.Data.Name, Is.EqualTo(updatedName));
+            A.CallTo(() => _authorRepository.UpdateAuthor(authorId, A<Author>.Ignored)).MustHaveHappenedOnceExactly();
         }
 
         [Test]
@@ -49,6 +52,7 @@ namespace TestProject.Authors.Commands
             // Arrange
             var invalidAuthorId = Guid.NewGuid();
             var invalidAuthorName = "Invalid Author";
+            A.CallTo(() => _authorRepository.GetAuthorById(invalidAuthorId)).Returns(Task.FromResult<Author>(null));
 
             // Act
             OperationResult<Author> result = await _mediator.Send(new UpdateAuthorCommand(invalidAuthorId, invalidAuthorName));
@@ -56,7 +60,7 @@ namespace TestProject.Authors.Commands
             // Assert
             Assert.That(result.IsSuccessfull, Is.False);
             Assert.That(result.Data, Is.Null);
-            Assert.That(result.ErrorMessage, Is.EqualTo("Author not found"));
+            Assert.That(result.ErrorMessage, Is.EqualTo("Author not found."));
         }
     }
 }

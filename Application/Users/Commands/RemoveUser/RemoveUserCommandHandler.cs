@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Application.Users.Commands.RemoveUser
 {
-    internal sealed class RemoveUserCommandHandler : IRequestHandler<RemoveUserCommand, OperationResult<string>>
+    public class RemoveUserCommandHandler : IRequestHandler<RemoveUserCommand, OperationResult<string>>
     {
         private readonly IUserRepository _userRepository;
 

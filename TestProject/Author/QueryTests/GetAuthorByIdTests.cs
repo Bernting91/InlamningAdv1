@@ -1,6 +1,7 @@
 ﻿using Application.Authors.Queries.GetAuthorByID;
+using Application.Interfaces.RepositoryInterfaces;
 using Domain;
-using Infrastructure.Database;
+using FakeItEasy;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
@@ -11,16 +12,16 @@ namespace TestProject.Authors.Queries
 {
     public class GetAuthorByIdQueryHandlerTests
     {
-        private FakeDatabase _fakeDatabase;
         private IMediator _mediator;
+        private IAuthorRepository _authorRepository;
 
         [SetUp]
         public void Setup()
         {
-            _fakeDatabase = new FakeDatabase();
+            _authorRepository = A.Fake<IAuthorRepository>();
             var services = new ServiceCollection();
             services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(GetAuthorByIdQueryHandler).Assembly));
-            services.AddSingleton(_fakeDatabase);
+            services.AddSingleton(_authorRepository);
             var provider = services.BuildServiceProvider();
             _mediator = provider.GetRequiredService<IMediator>();
         }
@@ -30,27 +31,30 @@ namespace TestProject.Authors.Queries
         {
             // Arrange
             Author authorToFind = new Author(Guid.NewGuid(), "Author to Find");
-            _fakeDatabase.Authors.Add(authorToFind);
+            A.CallTo(() => _authorRepository.GetAuthorById(authorToFind.Id)).Returns(Task.FromResult<Author?>(authorToFind));
 
             // Act
-            OperationResult<Author> result = await _mediator.Send(new GetAuthorByIdQuery(authorToFind.Id));
+            OperationResult<Author?> result = await _mediator.Send(new GetAuthorByIdQuery(authorToFind.Id));
 
             // Assert
             Assert.That(result.IsSuccessfull, Is.True);
             Assert.That(result.Data, Is.Not.Null);
-            Assert.That(result.Data.Id, Is.EqualTo(authorToFind.Id));
+            Assert.That(result.Data!.Id, Is.EqualTo(authorToFind.Id));
         }
 
         [Test]
         public async Task When_Method_GetAuthorById_isCalled_With_InvalidId_Then_AuthorNotFound()
         {
+            // Arrange
+            A.CallTo(() => _authorRepository.GetAuthorById(A<Guid>.Ignored)).Returns(Task.FromResult<Author?>(null));
+
             // Act
-            OperationResult<Author> result = await _mediator.Send(new GetAuthorByIdQuery(Guid.NewGuid()));
+            OperationResult<Author?> result = await _mediator.Send(new GetAuthorByIdQuery(Guid.NewGuid()));
 
             // Assert
             Assert.That(result.IsSuccessfull, Is.False);
             Assert.That(result.Data, Is.Null);
-            Assert.That(result.ErrorMessage, Is.EqualTo("Author not found"));
+            Assert.That(result.ErrorMessage, Is.EqualTo("Author not found."));
         }
     }
 }

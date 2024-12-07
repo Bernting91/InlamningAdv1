@@ -1,6 +1,9 @@
 ﻿using Application.Interfaces.RepositoryInterfaces;
 using Domain;
 using MediatR;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Application.Books.Commands.UpdateBook
 {
@@ -17,6 +20,11 @@ namespace Application.Books.Commands.UpdateBook
         {
             try
             {
+                if (request.Book == null)
+                {
+                    return OperationResult<Book?>.FailureResult("Book cannot be null.");
+                }
+
                 if (request.Book.Id == Guid.Empty)
                 {
                     return OperationResult<Book?>.FailureResult("Id cannot be empty.");
@@ -25,6 +33,11 @@ namespace Application.Books.Commands.UpdateBook
                 if (string.IsNullOrWhiteSpace(request.Book.Title))
                 {
                     return OperationResult<Book?>.FailureResult("Book title cannot be empty.");
+                }
+
+                if (request.Book.Author == null)
+                {
+                    return OperationResult<Book?>.FailureResult("Author cannot be null.");
                 }
 
                 var existingBook = await _bookRepository.GetBookById(request.Book.Id);

@@ -1,6 +1,7 @@
 ﻿using Application.Authors.Commands.RemoveAuthor;
+using Application.Interfaces.RepositoryInterfaces;
 using Domain;
-using Infrastructure.Database;
+using FakeItEasy;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using NUnit.Framework;
@@ -11,16 +12,16 @@ namespace TestProject.Authors.Commands
 {
     public class RemoveAuthorCommandHandlerTests
     {
-        private FakeDatabase _fakeDatabase;
         private IMediator _mediator;
+        private IAuthorRepository _authorRepository;
 
         [SetUp]
         public void Setup()
         {
-            _fakeDatabase = new FakeDatabase();
+            _authorRepository = A.Fake<IAuthorRepository>();
             var services = new ServiceCollection();
             services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(RemoveAuthorCommandHandler).Assembly));
-            services.AddSingleton(_fakeDatabase);
+            services.AddSingleton(_authorRepository);
             var provider = services.BuildServiceProvider();
             _mediator = provider.GetRequiredService<IMediator>();
         }
@@ -30,7 +31,8 @@ namespace TestProject.Authors.Commands
         {
             // Arrange
             Author authorToRemove = new Author(Guid.NewGuid(), "Author to Remove");
-            _fakeDatabase.Authors.Add(authorToRemove);
+            A.CallTo(() => _authorRepository.GetAuthorById(authorToRemove.Id)).Returns(Task.FromResult(authorToRemove));
+            A.CallTo(() => _authorRepository.DeleteAuthorById(authorToRemove.Id)).Returns(Task.FromResult("Author removed"));
 
             // Act
             OperationResult<Author> result = await _mediator.Send(new RemoveAuthorCommand(authorToRemove.Id));
@@ -38,7 +40,7 @@ namespace TestProject.Authors.Commands
             // Assert
             Assert.That(result.IsSuccessfull, Is.True);
             Assert.That(result.Data, Is.Not.Null);
-            Assert.That(_fakeDatabase.Authors, Does.Not.Contain(authorToRemove));
+            A.CallTo(() => _authorRepository.DeleteAuthorById(authorToRemove.Id)).MustHaveHappenedOnceExactly();
         }
 
         [Test]
@@ -46,6 +48,7 @@ namespace TestProject.Authors.Commands
         {
             // Arrange
             Guid invalidAuthorId = Guid.NewGuid();
+            A.CallTo(() => _authorRepository.GetAuthorById(invalidAuthorId)).Returns(Task.FromResult<Author>(null));
 
             // Act
             OperationResult<Author> result = await _mediator.Send(new RemoveAuthorCommand(invalidAuthorId));
@@ -53,7 +56,7 @@ namespace TestProject.Authors.Commands
             // Assert
             Assert.That(result.IsSuccessfull, Is.False);
             Assert.That(result.Data, Is.Null);
-            Assert.That(result.ErrorMessage, Is.EqualTo("Author not found"));
+            Assert.That(result.ErrorMessage, Is.EqualTo("Author not found."));
         }
     }
 }
