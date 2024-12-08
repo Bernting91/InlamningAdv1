@@ -17,6 +17,6 @@ namespace Application.Dtos
         public required string Description { get; set; }
 
         [Required(ErrorMessage = "AuthorId is required")]
-        public required int AuthorId { get; set; }
+        public required Guid AuthorId { get; set; }
     }
 }
