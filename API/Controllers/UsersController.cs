@@ -25,7 +25,7 @@ namespace API.Controllers
 
         [HttpGet]
         [Route("getAllUsers")]
-        [SwaggerOperation(Description = "Retrieves a list of all users.")]
+        [SwaggerOperation(Summary = "Get all users", Description = "Retrieves a list of all users.")]
         public async Task<IActionResult> GetAllUsers()
         {
             _logger.LogInformation("Retrieving all users");
@@ -34,7 +34,7 @@ namespace API.Controllers
 
         [HttpPost]
         [Route("Register")]
-        [SwaggerOperation(Description = "Registers a new user.")]
+        [SwaggerOperation(Summary = "Register a user", Description = "Registers a new user.")]
         public async Task<IActionResult> Register([FromBody] UserDto newUser)
         {
             if (!ModelState.IsValid)
@@ -48,7 +48,7 @@ namespace API.Controllers
 
         [HttpPost]
         [Route("Login")]
-        [SwaggerOperation(Description = "Logs in a user.")]
+        [SwaggerOperation(Summary = "Login",Description = "Logs in a user.")]
         public async Task<IActionResult> Login([FromBody] UserDto userWantToLogin)
         {
             if (!ModelState.IsValid)

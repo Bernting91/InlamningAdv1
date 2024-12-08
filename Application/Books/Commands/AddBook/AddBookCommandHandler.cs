@@ -1,46 +1,54 @@
-﻿using Application.Interfaces.RepositoryInterfaces;
+﻿using Application.Books.Commands.AddBook;
+using Application.Interfaces.RepositoryInterfaces;
 using Domain;
 using MediatR;
 using Microsoft.Extensions.Logging;
-using System.Threading;
-using System.Threading.Tasks;
 
-namespace Application.Books.Commands.AddBook
+public class AddBookCommandHandler : IRequestHandler<AddBookCommand, OperationResult<Book>>
 {
-    public class AddBookCommandHandler : IRequestHandler<AddBookCommand, OperationResult<Book>>
+    private readonly IBookRepository _bookRepository;
+    private readonly IAuthorRepository _authorRepository;
+    private readonly ILogger<AddBookCommandHandler> _logger;
+
+    public AddBookCommandHandler(IBookRepository bookRepository, IAuthorRepository authorRepository, ILogger<AddBookCommandHandler> logger)
     {
-        private readonly IBookRepository _bookRepository;
-        private readonly ILogger<AddBookCommandHandler> _logger;
+        _bookRepository = bookRepository;
+        _authorRepository = authorRepository;
+        _logger = logger;
+    }
 
-        public AddBookCommandHandler(IBookRepository bookRepository, ILogger<AddBookCommandHandler> logger)
+    public async Task<OperationResult<Book>> Handle(AddBookCommand request, CancellationToken cancellationToken)
+    {
+        _logger.LogInformation("Handling AddBookCommand");
+
+        if (request.Book == null)
         {
-            _bookRepository = bookRepository;
-            _logger = logger;
+            _logger.LogWarning("AddBookCommand received with null Book.");
+            return OperationResult<Book>.FailureResult("Book cannot be null.");
+        }
+        if (string.IsNullOrWhiteSpace(request.Book.Title))
+        {
+            _logger.LogWarning("AddBookCommand received with empty Book title.");
+            return OperationResult<Book>.FailureResult("Book title cannot be empty.");
+        }
+        if (request.Book.Author == null)
+        {
+            _logger.LogWarning("AddBookCommand received with null Author.");
+            return OperationResult<Book>.FailureResult("Author cannot be null.");
         }
 
-        public async Task<OperationResult<Book>> Handle(AddBookCommand request, CancellationToken cancellationToken)
+        var existingAuthor = await _authorRepository.GetAuthorById(request.Book.Author.Id);
+        if (existingAuthor == null)
         {
-            _logger.LogInformation("Handling AddBookCommand");
-
-            if (request.Book == null)
-            {
-                _logger.LogWarning("AddBookCommand received with null Book.");
-                return OperationResult<Book>.FailureResult("Book cannot be null.");
-            }
-            if (string.IsNullOrWhiteSpace(request.Book.Title))
-            {
-                _logger.LogWarning("AddBookCommand received with empty Book title.");
-                return OperationResult<Book>.FailureResult("Book title cannot be empty.");
-            }
-            if (request.Book.Author == null)
-            {
-                _logger.LogWarning("AddBookCommand received with null Author.");
-                return OperationResult<Book>.FailureResult("Author cannot be null.");
-            }
-
-            var addedBook = await _bookRepository.AddBook(request.Book);
-            _logger.LogInformation("Book with Id: {BookId} added successfully.", addedBook.Id);
-            return OperationResult<Book>.SuccessResult(addedBook);
+            await _authorRepository.AddAuthor(request.Book.Author);
         }
+        else
+        {
+            request.Book.Author = existingAuthor;
+        }
+
+        var addedBook = await _bookRepository.AddBook(request.Book);
+        _logger.LogInformation("Book with Id: {BookId} added successfully.", addedBook.Id);
+        return OperationResult<Book>.SuccessResult(addedBook);
     }
 }
