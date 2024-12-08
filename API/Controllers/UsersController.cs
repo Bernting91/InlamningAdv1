@@ -37,6 +37,11 @@ namespace API.Controllers
         [SwaggerOperation(Description = "Registers a new user.")]
         public async Task<IActionResult> Register([FromBody] UserDto newUser)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
             _logger.LogInformation("Registering a new user: {UserName}", newUser.UserName);
             return Ok(await _mediator.Send(new AddNewUserCommand(newUser)));
         }
@@ -46,6 +51,11 @@ namespace API.Controllers
         [SwaggerOperation(Description = "Logs in a user.")]
         public async Task<IActionResult> Login([FromBody] UserDto userWantToLogin)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
             _logger.LogInformation("Logging in user: {UserName}", userWantToLogin.UserName);
             return Ok(await _mediator.Send(new LoginUserQuery(userWantToLogin)));
         }

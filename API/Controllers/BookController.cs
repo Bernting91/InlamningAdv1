@@ -6,6 +6,7 @@ using Application.Books.Queries.GetAllBooks;
 using Application.Books.Commands.AddBook;
 using Application.Books.Commands.UpdateBook;
 using Application.Books.Commands.RemoveBook;
+using Application.Dtos;
 using Microsoft.Extensions.Logging;
 using Swashbuckle.AspNetCore.Annotations;
 
@@ -70,12 +71,24 @@ namespace API.Controllers
 
         [HttpPost]
         [SwaggerOperation(Description = "Creates a new book.")]
-        public async Task<ActionResult<Book>> Post([FromBody] Book bookToAdd)
+        public async Task<ActionResult<Book>> Post([FromBody] BookDto bookToAdd)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
             _logger.LogInformation("Adding a new book: {BookTitle}", bookToAdd.Title);
             try
             {
-                var result = await _mediator.Send(new AddBookCommand(bookToAdd));
+                var book = new Book(
+                    bookToAdd.Id,
+                    bookToAdd.Title,
+                    bookToAdd.Description,
+                    new Author(bookToAdd.AuthorId, string.Empty)
+                );
+
+                var result = await _mediator.Send(new AddBookCommand(book));
                 if (!result.IsSuccessfull)
                 {
                     _logger.LogWarning("Failed to add book: {ErrorMessage}", result.ErrorMessage);
@@ -92,8 +105,13 @@ namespace API.Controllers
 
         [HttpPut("{id}")]
         [SwaggerOperation(Description = "Updates an existing book.")]
-        public async Task<IActionResult> Put(Guid id, [FromBody] Book bookToUpdate)
+        public async Task<IActionResult> Put(Guid id, [FromBody] BookDto bookToUpdate)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
             _logger.LogInformation("Updating book with ID: {BookId}", id);
             try
             {
@@ -103,7 +121,14 @@ namespace API.Controllers
                     return BadRequest("ID mismatch.");
                 }
 
-                var result = await _mediator.Send(new UpdateBookCommand(bookToUpdate.Id, bookToUpdate));
+                var book = new Book(
+                    bookToUpdate.Id,
+                    bookToUpdate.Title,
+                    bookToUpdate.Description,
+                    new Author(bookToUpdate.AuthorId, string.Empty)
+                );
+
+                var result = await _mediator.Send(new UpdateBookCommand(bookToUpdate.Id, book));
                 if (!result.IsSuccessfull)
                 {
                     _logger.LogWarning("Failed to update book with ID: {BookId}", id);

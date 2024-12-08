@@ -3,6 +3,7 @@ using Application.Authors.Commands.RemoveAuthor;
 using Application.Authors.Commands.UpdateAuthor;
 using Application.Authors.Queries.GetAllAuthors;
 using Application.Authors.Queries.GetAuthorByID;
+using Application.Dtos;
 using Domain;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -59,10 +60,17 @@ namespace API.Controllers
 
         [HttpPost]
         [SwaggerOperation(Summary = "Add a new author", Description = "Creates a new author.")]
-        public async Task<ActionResult<Author>> Post([FromBody] Author authorToAdd)
+        public async Task<ActionResult<Author>> Post([FromBody] AuthorDto authorToAdd)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var author = new Author(authorToAdd.Id, authorToAdd.Name);
+
             _logger.LogInformation("Adding a new author: {AuthorName}", authorToAdd.Name);
-            var result = await _mediator.Send(new AddAuthorCommand(authorToAdd));
+            var result = await _mediator.Send(new AddAuthorCommand(author));
             if (!result.IsSuccessfull)
             {
                 _logger.LogWarning("Failed to add author: {ErrorMessage}", result.ErrorMessage);
@@ -73,8 +81,13 @@ namespace API.Controllers
 
         [HttpPut("{id}")]
         [SwaggerOperation(Summary = "Update an author", Description = "Updates an existing author.")]
-        public async Task<IActionResult> Put(Guid id, [FromBody] Author authorToUpdate)
+        public async Task<IActionResult> Put(Guid id, [FromBody] AuthorDto authorToUpdate)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
             _logger.LogInformation("Updating author with ID: {AuthorId}", id);
             if (id != authorToUpdate.Id)
             {
