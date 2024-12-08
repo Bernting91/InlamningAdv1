@@ -9,6 +9,7 @@ using Application.Books.Commands.RemoveBook;
 using Application.Dtos;
 using Microsoft.Extensions.Logging;
 using Swashbuckle.AspNetCore.Annotations;
+using Application.Authors.Queries.GetAuthorByID;
 
 namespace API.Controllers
 {
@@ -26,7 +27,7 @@ namespace API.Controllers
         }
 
         [HttpGet]
-        [SwaggerOperation(Description = "Retrieves a list of all books.")]
+        [SwaggerOperation(Summary = "Get all books", Description = "Retrieves a list of all books.")]
         public async Task<IActionResult> Get()
         {
             _logger.LogInformation("Retrieving all books");
@@ -48,7 +49,7 @@ namespace API.Controllers
         }
 
         [HttpGet("{id}")]
-        [SwaggerOperation(Description = "Retrieves a book by its unique ID.")]
+        [SwaggerOperation(Summary = "Get a book by ID", Description = "Retrieves a book by its unique ID.")]
         public async Task<ActionResult<Book>> Get(Guid id)
         {
             _logger.LogInformation("Retrieving book with ID: {BookId}", id);
@@ -70,7 +71,7 @@ namespace API.Controllers
         }
 
         [HttpPost]
-        [SwaggerOperation(Description = "Creates a new book.")]
+        [SwaggerOperation(Summary = "Add a new book", Description = "Creates a new book.")]
         public async Task<ActionResult<Book>> Post([FromBody] BookDto bookToAdd)
         {
             if (!ModelState.IsValid)
@@ -81,11 +82,22 @@ namespace API.Controllers
             _logger.LogInformation("Adding a new book: {BookTitle}", bookToAdd.Title);
             try
             {
+                var authorResult = await _mediator.Send(new GetAuthorByIdQuery(bookToAdd.AuthorId));
+                Author author;
+                if (authorResult.IsSuccessfull)
+                {
+                    author = authorResult.Data;
+                }
+                else
+                {
+                    author = new Author(bookToAdd.AuthorId, bookToAdd.AuthorName);
+                }
+
                 var book = new Book(
                     bookToAdd.Id,
                     bookToAdd.Title,
                     bookToAdd.Description,
-                    new Author(bookToAdd.AuthorId, string.Empty)
+                    author
                 );
 
                 var result = await _mediator.Send(new AddBookCommand(book));
@@ -103,8 +115,9 @@ namespace API.Controllers
             }
         }
 
+
         [HttpPut("{id}")]
-        [SwaggerOperation(Description = "Updates an existing book.")]
+        [SwaggerOperation(Summary = "Update a book", Description = "Updates an existing book.")]
         public async Task<IActionResult> Put(Guid id, [FromBody] BookDto bookToUpdate)
         {
             if (!ModelState.IsValid)
@@ -145,7 +158,7 @@ namespace API.Controllers
         }
 
         [HttpDelete("{id}")]
-        [SwaggerOperation(Description = "Deletes a book by its unique ID.")]
+        [SwaggerOperation(Summary = "Delete a book by ID", Description = "Deletes a book by its unique ID.")]
         public async Task<IActionResult> Delete(Guid id)
         {
             _logger.LogInformation("Deleting book with ID: {BookId}", id);
