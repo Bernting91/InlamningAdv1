@@ -1,16 +1,17 @@
-using MediatR;
-using Application.Books.Queries;
-using Infrastructure.Database;
-using Microsoft.Extensions.DependencyInjection;
 using Application;
+using Infrastructure.Database;
 using Infrastructure;
-using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using Swashbuckle.AspNetCore.Annotations;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Configure logging
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
 
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
 byte[] secretkey = Encoding.ASCII.GetBytes(jwtSettings["SecretKey"]!);

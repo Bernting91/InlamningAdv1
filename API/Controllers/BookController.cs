@@ -6,6 +6,7 @@ using Application.Books.Queries.GetAllBooks;
 using Application.Books.Commands.AddBook;
 using Application.Books.Commands.UpdateBook;
 using Application.Books.Commands.RemoveBook;
+using Microsoft.Extensions.Logging;
 using Swashbuckle.AspNetCore.Annotations;
 
 namespace API.Controllers
@@ -15,27 +16,32 @@ namespace API.Controllers
     public class BookController : ControllerBase
     {
         private readonly IMediator _mediator;
+        private readonly ILogger<BookController> _logger;
 
-        public BookController(IMediator mediator)
+        public BookController(IMediator mediator, ILogger<BookController> logger)
         {
             _mediator = mediator;
+            _logger = logger;
         }
 
         [HttpGet]
         [SwaggerOperation(Description = "Retrieves a list of all books.")]
         public async Task<IActionResult> Get()
         {
+            _logger.LogInformation("Retrieving all books");
             try
             {
                 var result = await _mediator.Send(new GetAllBooksQuery());
                 if (!result.IsSuccessfull)
                 {
+                    _logger.LogWarning("No books found");
                     return NotFound(result.ErrorMessage);
                 }
                 return Ok(result.Data);
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error retrieving books");
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
@@ -44,17 +50,20 @@ namespace API.Controllers
         [SwaggerOperation(Description = "Retrieves a book by its unique ID.")]
         public async Task<ActionResult<Book>> Get(Guid id)
         {
+            _logger.LogInformation("Retrieving book with ID: {BookId}", id);
             try
             {
                 var result = await _mediator.Send(new GetBookByIdQuery(id));
                 if (!result.IsSuccessfull)
                 {
+                    _logger.LogWarning("Book with ID {BookId} not found", id);
                     return NotFound(result.ErrorMessage);
                 }
                 return Ok(result.Data);
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error retrieving book with ID: {BookId}", id);
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
@@ -63,17 +72,20 @@ namespace API.Controllers
         [SwaggerOperation(Description = "Creates a new book.")]
         public async Task<ActionResult<Book>> Post([FromBody] Book bookToAdd)
         {
+            _logger.LogInformation("Adding a new book: {BookTitle}", bookToAdd.Title);
             try
             {
                 var result = await _mediator.Send(new AddBookCommand(bookToAdd));
                 if (!result.IsSuccessfull)
                 {
+                    _logger.LogWarning("Failed to add book: {ErrorMessage}", result.ErrorMessage);
                     return BadRequest(result.ErrorMessage);
                 }
                 return CreatedAtAction(nameof(Get), new { id = result.Data.Id }, result.Data);
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error adding book: {BookTitle}", bookToAdd.Title);
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
@@ -82,16 +94,19 @@ namespace API.Controllers
         [SwaggerOperation(Description = "Updates an existing book.")]
         public async Task<IActionResult> Put(Guid id, [FromBody] Book bookToUpdate)
         {
+            _logger.LogInformation("Updating book with ID: {BookId}", id);
             try
             {
                 if (id != bookToUpdate.Id)
                 {
+                    _logger.LogWarning("ID mismatch: {BookId} != {BookToUpdateId}", id, bookToUpdate.Id);
                     return BadRequest("ID mismatch.");
                 }
 
                 var result = await _mediator.Send(new UpdateBookCommand(bookToUpdate.Id, bookToUpdate));
                 if (!result.IsSuccessfull)
                 {
+                    _logger.LogWarning("Failed to update book with ID: {BookId}", id);
                     return NotFound(result.ErrorMessage);
                 }
 
@@ -99,6 +114,7 @@ namespace API.Controllers
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error updating book with ID: {BookId}", id);
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
@@ -107,17 +123,20 @@ namespace API.Controllers
         [SwaggerOperation(Description = "Deletes a book by its unique ID.")]
         public async Task<IActionResult> Delete(Guid id)
         {
+            _logger.LogInformation("Deleting book with ID: {BookId}", id);
             try
             {
                 var result = await _mediator.Send(new GetBookByIdQuery(id));
                 if (!result.IsSuccessfull)
                 {
+                    _logger.LogWarning("Book with ID {BookId} not found", id);
                     return NotFound(result.ErrorMessage);
                 }
 
                 var deleteResult = await _mediator.Send(new RemoveBookCommand(id));
                 if (!deleteResult.IsSuccessfull)
                 {
+                    _logger.LogWarning("Failed to delete book with ID: {BookId}", id);
                     return BadRequest(deleteResult.ErrorMessage);
                 }
 
@@ -125,6 +144,7 @@ namespace API.Controllers
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error deleting book with ID: {BookId}", id);
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
