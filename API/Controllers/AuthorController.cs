@@ -67,6 +67,12 @@ namespace API.Controllers
                 return BadRequest(ModelState);
             }
 
+            var existingAuthor = await _mediator.Send(new GetAuthorByIdQuery(authorToAdd.Id));
+            if (existingAuthor.IsSuccessfull)
+            {
+                authorToAdd.Id = Guid.NewGuid();
+            }
+
             var author = new Author(authorToAdd.Id, authorToAdd.Name);
 
             _logger.LogInformation("Adding a new author: {AuthorName}", authorToAdd.Name);
