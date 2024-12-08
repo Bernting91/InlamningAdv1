@@ -5,6 +5,7 @@ using Application.Users.Queries.Login;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Swashbuckle.AspNetCore.Annotations;
 
 namespace API.Controllers
@@ -14,10 +15,12 @@ namespace API.Controllers
     public class UsersController : ControllerBase
     {
         internal readonly IMediator _mediator;
+        private readonly ILogger<UsersController> _logger;
 
-        public UsersController(IMediator mediator)
+        public UsersController(IMediator mediator, ILogger<UsersController> logger)
         {
             _mediator = mediator;
+            _logger = logger;
         }
 
         [HttpGet]
@@ -25,6 +28,7 @@ namespace API.Controllers
         [SwaggerOperation(Description = "Retrieves a list of all users.")]
         public async Task<IActionResult> GetAllUsers()
         {
+            _logger.LogInformation("Retrieving all users");
             return Ok(await _mediator.Send(new GetAllUsersQuery()));
         }
 
@@ -33,6 +37,7 @@ namespace API.Controllers
         [SwaggerOperation(Description = "Registers a new user.")]
         public async Task<IActionResult> Register([FromBody] UserDto newUser)
         {
+            _logger.LogInformation("Registering a new user: {UserName}", newUser.UserName);
             return Ok(await _mediator.Send(new AddNewUserCommand(newUser)));
         }
 
@@ -41,6 +46,7 @@ namespace API.Controllers
         [SwaggerOperation(Description = "Logs in a user.")]
         public async Task<IActionResult> Login([FromBody] UserDto userWantToLogin)
         {
+            _logger.LogInformation("Logging in user: {UserName}", userWantToLogin.UserName);
             return Ok(await _mediator.Send(new LoginUserQuery(userWantToLogin)));
         }
     }
